@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.core.widget.NestedScrollView
+
+            android:id="@+id/mainLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout
+
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+               >
+               <LinearLayout
+                   android:id="@+id/header_card"
+                   android:layout_width="match_parent"
+                   android:layout_height="wrap_content"
+                   android:orientation="horizontal"
+                   android:gravity="center_vertical"
+                   android:layout_marginTop="15dp"
+                   android:padding="10dp">
+
+
+                   <de.hdodenhof.circleimageview.CircleImageView
+                       android:layout_width="60dp"
+                       android:layout_height="60dp"
+                       android:src="@drawable/user_img"/>
+                  <LinearLayout
+                      android:layout_width="wrap_content"
+                      android:layout_height="match_parent"
+                      android:paddingHorizontal="10dp"
+                      android:layout_weight="1"
+                      android:orientation="vertical">
+
+
+                      <TextView
+                          android:id="@+id/textView"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:text="Welcome Back"
+                          android:textSize="20sp" />
+
+                      <TextView
+                          android:id="@+id/textView2"
+                          android:layout_width="wrap_content"
+                          android:layout_height="wrap_content"
+                          android:text="Alexander"
+                          android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                          android:textSize="28sp" />
+                  </LinearLayout>
+
+                   <androidx.cardview.widget.CardView
+                       android:visibility="gone"
+                       android:id="@+id/searchIcon"
+                       android:layout_width="40dp"
+                       android:layout_height="40dp"
+                       app:cardBackgroundColor="#4FCFCECE"
+                       app:cardCornerRadius="20dp"
+                       android:clickable="true"
+                       android:foreground="?attr/selectableItemBackground"
+                       app:cardElevation="0dp">
+
+
+                       <ImageView
+
+                           android:layout_width="wrap_content"
+                           android:layout_height="wrap_content"
+                           android:layout_gravity="center"
+                           app:srcCompat="@drawable/ic_baseline_search_icon" />
+                   </androidx.cardview.widget.CardView>
+
+                   <androidx.cardview.widget.CardView
+                       android:layout_width="40dp"
+                       android:layout_height="40dp"
+                       android:layout_marginHorizontal="10dp"
+                       android:clickable="true"
+                       android:foreground="?attr/selectableItemBackground"
+                       app:cardBackgroundColor="#4FCFCECE"
+                       app:cardCornerRadius="20dp"
+                       app:cardElevation="0dp">
+
+                       <ImageView
+                           android:layout_width="25dp"
+                           android:layout_height="25dp"
+                           android:layout_gravity="center"
+                           app:srcCompat="@drawable/bell_icon" />
+                   </androidx.cardview.widget.CardView>
+
+
+
+               </LinearLayout>
+
+                <TextView
+                    android:id="@+id/textView4"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="20dp"
+                    android:fontFamily="@font/abhaya_libre"
+                    android:text="Categories"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+                    android:textSize="28sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/categories_recyclerView"
+
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingVertical="25dp">
+
+                </androidx.recyclerview.widget.RecyclerView>
+
+                <TextView
+                    android:id="@+id/headerText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/abhaya_libre"
+                    android:text="All"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                    android:paddingLeft="10dp"
+
+                    android:paddingHorizontal="10dp"
+                    android:paddingBottom="10dp"
+                    android:textSize="28sp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/items_recyclerView"
+                    android:paddingHorizontal="10dp"
+
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+                <LinearLayout
+                    android:id="@+id/emptyListLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:paddingTop="50dp"
+                    >
+
+
+                    <TextView
+                        android:id="@+id/textView10"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/abhaya_libre"
+                        android:gravity="center"
+                        android:text="Add new Item"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Body2"
+                        android:textSize="34sp" />
+
+                    <TextView
+                        android:id="@+id/textView6"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+
+                        android:fontFamily="@font/abhaya_libre"
+                        android:gravity="center"
+
+                        android:text="Please add new items by clicking on the plus button below"
+                        android:textSize="20sp" />
+                    <ImageView
+                        android:id="@+id/imageView3"
+                        android:layout_width="200dp"
+                        android:layout_height="match_parent"
+                        android:visibility="gone"
+                       android:adjustViewBounds="true"
+                        android:layout_marginRight="20dp"
+                        app:srcCompat="@drawable/icon_arrow_down" />
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+        </androidx.core.widget.NestedScrollView>
+
+        <ProgressBar
+            android:visibility="gone"
+            android:id="@+id/progressBar"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+</layout>
