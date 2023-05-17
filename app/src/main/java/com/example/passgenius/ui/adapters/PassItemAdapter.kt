@@ -125,6 +125,13 @@ class PassItemAdapter
                     context.startActivity(intent)
                 }
 
+                holder.menuIcon.setOnClickListener {
+                    dialogClass.noteItem = item.noteItem
+                    dialogClass.itemType = AddItemType.SECURE_NOTE
+                    dialogClass.showDialog(position, this)
+
+                }
+
             }
             else->{
             }

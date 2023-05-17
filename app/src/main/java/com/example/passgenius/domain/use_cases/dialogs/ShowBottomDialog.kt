@@ -18,6 +18,7 @@ import com.example.passgenius.common.DeleteClickInterface
 import com.example.passgenius.R
 import com.example.passgenius.common.enums.AddItemType
 import com.example.passgenius.common.enums.BottomDialogActionType
+import com.example.passgenius.common.extension_methods.StringMethods.shortName
 import com.example.passgenius.domain.models.LoginItemModel
 import com.example.passgenius.domain.models.SecureNoteModel
 import de.hdodenhof.circleimageview.CircleImageView
@@ -68,7 +69,7 @@ open class ShowBottomDialog(
 
 //                deleteDialogClass.loginItemModel = loginItem!!
                 layout3.visibility = View.VISIBLE
-//                itemName.text = loginItem.itemName
+
                 setHeaderValues(loginItem)
                 deleteCard.setOnClickListener {
 //                    actionType?.value = BottomDialogActionType("DELETE",position)
@@ -95,7 +96,11 @@ open class ShowBottomDialog(
                     Toast.makeText(context, "Copied to clipboard.", Toast.LENGTH_SHORT).show()
                 }
             }
+            AddItemType.SECURE_NOTE ->{
 
+
+
+            }
             else->{
 
             }
@@ -105,16 +110,15 @@ open class ShowBottomDialog(
     }
 
     private fun setHeaderValues(item: LoginItemModel) {
-        if (item.email != "") {
-            itemImage.visibility = View.VISIBLE
-            logoTextCard.visibility = View.GONE
-//            Glide.with(context).load(item.imageUrl).into(itemImage)
 
-        } else {
+//            itemImage.visibility = View.VISIBLE
+//            logoTextCard.visibility = View.GONE
+////            Glide.with(context).load(item.imageUrl).into(itemImage)
             itemImage.visibility = View.GONE
             logoTextCard.visibility = View.VISIBLE
-//            logoText.text = item.itemName.substring(0, 2).uppercase()
-        }
+            logoText.text = item.itemName.shortName()
+            itemName.text = item.itemName
+
     }
 
     private fun observeDialogDeleteClick(position: Int, clickInterface: DeleteClickInterface) {
