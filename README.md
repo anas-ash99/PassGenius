@@ -11,10 +11,6 @@ PssGenius is an Android mobile application that allows users to store and manage
 
 PssGenius is developed using Kotlin programming language and follows the MVVM (Model-View-ViewModel) design patterns to ensure a robust and maintainable codebase. Ongoing enhancements are being made to improve the app's functionality and user experience.
 
-## Future Enhancements
-
-- Implementation of advanced security features to protect user data.
-- Addition of features such as password generation, data backup, and synchronization.
 
 ## Getting Started
 
