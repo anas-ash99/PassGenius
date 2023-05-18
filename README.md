@@ -22,6 +22,9 @@ PssGenius is developed using Kotlin programming language and follows the MVVM (M
 2. Open the project in Android Studio.
 3. Build and run the application on an Android device or emulator.
 
+Alternatively you can just download the APK file on your Android phone using the following link:
+https://drive.google.com/file/d/1KhKYXm3D07TgjQMMIQ2Jcc1bC3sDqYBG/view?usp=share_link
+
 ## Contributing
 
 Contributions to PssGenius are welcome! If you would like to contribute, please follow these steps:
