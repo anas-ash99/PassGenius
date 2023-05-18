@@ -1,34 +1,39 @@
-# PassGenius
-PssGenius an android moobile application that allows users to store their passwords, payment information, notes, and more. Developed using Kotlin programming language with MVVM (Model-View-ViewModel) design patterns, With this app, users can easily organize and access their information, ensuring efficiency and peace of mind.
+# PssGenius
 
-Note that the app is still under development and lack on few features especially security features so please do not store any real sensitive information
-The app is to be used only for testing purposes 
+PssGenius is an Android mobile application that allows users to store and manage their passwords, payment information, notes, and more. The app is currently under development and lacks some features, especially security measures. Therefore, it is advised not to store any real sensitive information. PssGenius is intended for testing purposes only.
+
+## Features
+
+- Securely store and manage passwords, payment information, notes, and more.
+- Intuitive user interface for efficient organization and access to information.
+
+## Development
+
+PssGenius is developed using Kotlin programming language and follows the MVVM (Model-View-ViewModel) design patterns to ensure a robust and maintainable codebase. Ongoing enhancements are being made to improve the app's functionality and user experience.
+
+## Future Enhancements
+
+- Implementation of advanced security features to protect user data.
+- Addition of features such as password generation, data backup, and synchronization.
+
+## Getting Started
+
+1. Clone the repository to your local machine.
+2. Open the project in Android Studio.
+3. Build and run the application on an Android device or emulator.
+
+## Contributing
+
+Contributions to PssGenius are welcome! If you would like to contribute, please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Commit your changes with clear and descriptive messages.
+4. Push your branch to your forked repository.
+5. Open a pull request, explaining the changes you have made.
+
+## Disclaimer
+
+The developers of PssGenius do not assume any liability for any loss or damage caused by the use of this application. It is strongly recommended not to store any real sensitive information within the app due to its current development stage and lack of necessary security features.
 
 
-
-PssGenius
-PssGenius is an Android mobile application that enables users to securely store and manage their passwords, payment information, notes, and more. Built with Kotlin programming language and utilizing the MVVM (Model-View-ViewModel) design patterns, this app provides users with an intuitive interface and efficient organization of their sensitive data.
-
-Please note that PssGenius is currently under development and lacks some essential features, particularly security measures. Therefore, it is crucial to refrain from storing any real sensitive information within the app. PssGenius should only be used for testing purposes.
-
-Features
-Securely store and manage passwords, payment information, notes, and more.
-Intuitive user interface for easy navigation and organization of data.
-Ongoing development to enhance functionality and user experience.
-Future Enhancements
-Implementation of robust security measures to ensure data protection.
-Additional features like password generation, data backup, and synchronization.
-Getting Started
-Clone the repository to your local machine.
-Open the project in Android Studio.
-Build and run the application on an Android device or emulator.
-Contributing
-Contributions to PssGenius are welcome! If you would like to contribute to the development of the app, please follow these steps:
-
-Fork the repository.
-Create a new branch for your feature or bug fix.
-Commit your changes with descriptive commit messages.
-Push your branch to your forked repository.
-Open a pull request, describing the changes you've made.
-Disclaimer
-The developers of PssGenius do not take responsibility for any loss or damage resulting from the use of this application. It is strongly advised not to store any real sensitive information within the app, as it is still under development and lacks necessary security features.
