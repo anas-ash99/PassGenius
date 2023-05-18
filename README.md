@@ -7,16 +7,20 @@ PssGenius is an Android mobile application that allows users to store and manage
 - Securely store and manage passwords, payment information, notes, and more.
 - Intuitive user interface for efficient organization and access to information.
 
+
+
 ## Development
 
-The development of this project followed modern software development practices and utilized the following technologies:
+The development of this project followed modern software development practices and incorporated the following technologies and design patterns:
 
-- MVVM Design Pattern: The project was structured using the Model-View-ViewModel (MVVM) design pattern, separating concerns and promoting maintainable and scalable code.
-- Node.js with MongoDB (Mongoose): The backend was implemented using Node.js, a powerful JavaScript runtime, along with MongoDB as the database management system.
-- Firebase Firestore: To achieve real-time data updates and synchronization, Firebase Firestore, a cloud-based NoSQL database, was integrated into the project.
+- MVVM Design Pattern: The project was structured using the Model-View-ViewModel (MVVM) design pattern. This pattern ensures separation of concerns, facilitates code reusability, and promotes a clear and maintainable architecture.
 
-These technologies were carefully chosen to ensure efficient development, robust data management, and seamless real-time updates.
-tes.
+- Node.js with MongoDB: The backend of the application was developed using Node.js, a powerful JavaScript runtime, in conjunction with MongoDB as the database management system. This combination offers a scalable and efficient solution for handling server-side operations and data storage.
+
+- Room Databases: To provide offline support and data persistence, Room Databases, an Android library, was integrated into the project. This enables users to access and modify data locally when they have no internet access, ensuring a seamless user experience.
+
+These technologies and design patterns were carefully chosen to create a robust and user-friendly application, accommodating both online and offline usage scenarios.
+
 
 
 ## Getting Started
