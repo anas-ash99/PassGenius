@@ -9,7 +9,14 @@ PssGenius is an Android mobile application that allows users to store and manage
 
 ## Development
 
-PssGenius is developed using Kotlin programming language and follows the MVVM (Model-View-ViewModel) design patterns to ensure a robust and maintainable codebase. Ongoing enhancements are being made to improve the app's functionality and user experience.
+The development of this project followed modern software development practices and utilized the following technologies:
+
+- MVVM Design Pattern: The project was structured using the Model-View-ViewModel (MVVM) design pattern, separating concerns and promoting maintainable and scalable code.
+- Node.js with MongoDB (Mongoose): The backend was implemented using Node.js, a powerful JavaScript runtime, along with MongoDB as the database management system.
+- Firebase Firestore: To achieve real-time data updates and synchronization, Firebase Firestore, a cloud-based NoSQL database, was integrated into the project.
+
+These technologies were carefully chosen to ensure efficient development, robust data management, and seamless real-time updates.
+tes.
 
 
 ## Getting Started
