@@ -30,7 +30,7 @@ These technologies and design patterns were carefully chosen to create a robust 
 3. Build and run the application on an Android device or emulator.
 
 Alternatively you can just download the APK file on your Android phone using the following link:
-https://drive.google.com/file/d/1KhKYXm3D07TgjQMMIQ2Jcc1bC3sDqYBG/view?usp=share_link
+[Download APK](https://drive.google.com/file/d/1KhKYXm3D07TgjQMMIQ2Jcc1bC3sDqYBG/view?usp=share_link)
 
 I still haven't implemented any UI for creating a new account so you can just sign in using yout biometric authentication or just enter any password
 
