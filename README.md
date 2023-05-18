@@ -1,6 +1,6 @@
-# PssGenius
+# PassGenius
 
-PssGenius is an Android mobile application that allows users to store and manage their passwords, payment information, notes, and more. The app is currently under development and lacks some features, especially security measures. Therefore, it is advised not to store any real sensitive information. PssGenius is intended for testing purposes only.
+PassGenius is an Android mobile application that allows users to store and manage their passwords, payment information, notes, and more. The app is currently under development and lacks some features, especially security measures. Therefore, it is advised not to store any real sensitive information. PssGenius is intended for testing purposes only.
 
 ## Features
 
