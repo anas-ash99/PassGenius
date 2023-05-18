@@ -32,15 +32,7 @@ These technologies and design patterns were carefully chosen to create a robust 
 Alternatively you can just download the APK file on your Android phone using the following link:
 https://drive.google.com/file/d/1KhKYXm3D07TgjQMMIQ2Jcc1bC3sDqYBG/view?usp=share_link
 
-## Contributing
 
-Contributions to PssGenius are welcome! If you would like to contribute, please follow these steps:
-
-1. Fork the repository.
-2. Create a new branch for your feature or bug fix.
-3. Commit your changes with clear and descriptive messages.
-4. Push your branch to your forked repository.
-5. Open a pull request, explaining the changes you have made.
 
 ## Disclaimer
 
