@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.passgenius.common.DeleteClickInterface
 import com.example.passgenius.R
 import com.example.passgenius.ui.ItemPage.AddNewItemActivity
-import com.example.passgenius.domain.use_cases.dialogs.ShowBottomDialog
+import com.example.passgenius.ui.dialogs.ShowBottomDialog
 import com.example.passgenius.common.enums.AddItemType
 import com.example.passgenius.domain.models.ItemListModel
 import com.example.passgenius.domain.viewModels.MainViewModel

@@ -1,6 +1,6 @@
 package com.example.passgenius.data.di
 
-import com.example.passgenius.domain.use_cases.dialogs.CenterDialog
+import com.example.passgenius.ui.dialogs.CenterDialog
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

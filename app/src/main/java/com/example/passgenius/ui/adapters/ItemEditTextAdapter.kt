@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.os.Build
 import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
@@ -27,6 +28,7 @@ import com.example.passgenius.domain.models.EditTextItemModel
 import com.example.passgenius.domain.viewModels.AddItemViewModel
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import okhttp3.internal.notifyAll
 
 class ItemEditTextAdapter(
@@ -42,9 +44,9 @@ class ItemEditTextAdapter(
   private lateinit var viewModel: AddItemViewModel
   private var  isDoneClicked:MutableLiveData<Boolean> = MutableLiveData()
 
+
   override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
     viewModel = ViewModelProvider(activity)[AddItemViewModel::class.java]
-
 
     return MyViewHolder (
       LayoutInflater.from(context).inflate(R.layout.item_edit_text, parent, false)
@@ -55,6 +57,8 @@ class ItemEditTextAdapter(
   fun onDoneClick(value:Boolean){
     isDoneClicked.value = value
   }
+
+
 
   private fun initViewItem(holder: MyViewHolder, position:Int) {
     val item: EditTextItemModel = itemsList[position]

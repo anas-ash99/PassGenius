@@ -21,7 +21,7 @@ import com.example.passgenius.common.KeyboardManger
 import com.example.passgenius.common.KeyboardManger.hideSoftKeyboard
 import com.example.passgenius.ui.adapters.ItemEditTextAdapter
 import com.example.passgenius.databinding.ActivityAddNewLoginBinding
-import com.example.passgenius.domain.use_cases.dialogs.CenterDialog
+import com.example.passgenius.ui.dialogs.CenterDialog
 import com.example.passgenius.common.enums.AddItemType
 import com.example.passgenius.data.dataStates.DataState
 import com.example.passgenius.data.repository.MyRepository

@@ -13,7 +13,7 @@ import com.example.passgenius.common.Constants
 import com.example.passgenius.common.DataHolder
 import com.example.passgenius.databinding.FragmentSecurityBinding
 import com.example.passgenius.domain.interfaces.AppLockTimeInterface
-import com.example.passgenius.domain.use_cases.dialogs.AppLockTimeDialog
+import com.example.passgenius.ui.dialogs.AppLockTimeDialog
 import com.example.passgenius.domain.viewModels.SettingsPageViewModel
 import dagger.hilt.android.AndroidEntryPoint
 

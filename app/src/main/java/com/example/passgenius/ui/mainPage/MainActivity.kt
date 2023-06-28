@@ -65,37 +65,14 @@ class MainActivity : AppCompatActivity() {
         onBottomNavClicks()
 //        viewModel.loggedInUser?.favourites = arrayListOf("644c61a7ea1c970a42384a2c", "644c7a9fb0277a4a0675584a")
 //        viewModel.updateLoggedInUser()
-//        println(viewModel.loggedInUser)
+
+
 
     }
 
 
 
-    fun test(list:MutableList<Objects>){
 
-        println(list[0])
-
-    }
-
-    private fun authOnCreate(){
-        if (viewModel.loggedInUser?.lastSeen != "ACTIVE"){
-            viewModel.isExitingTheApp = false
-            startActivity(Intent(applicationContext, AuthenticationActivity::class.java))
-            finish()
-
-        }else{
-            val transaction: FragmentTransaction = manager.beginTransaction()
-            transaction.replace(wR.id.fragment_layout, HomeFragment() , "home_fragment")
-            transaction.commit()
-            handleAddButtonClick()
-            i = Intent(this, AddNewItemActivity::class.java)
-            onAddCategoriesClicks()
-            onBottomNavClicks()
-
-        }
-
-
-    }
 
     private fun authUserOnStart() {
 
@@ -213,15 +190,6 @@ class MainActivity : AppCompatActivity() {
 
         try {
 
-
-//        binding.homeIcon.layoutParams.height  = 75
-//        binding.homeIcon.layoutParams.width  = 75
-//        binding.starIcon.layoutParams.height  = 75
-//        binding.starIcon.layoutParams.width  = 75
-//        binding.profileIcon.layoutParams.height  = 65
-//        binding.profileIcon.layoutParams.width  = 65
-//        binding.searchImage.layoutParams.width = 75
-//        binding.searchImage.layoutParams.height = 75
         binding.starIcon.setBackgroundResource(wR.drawable.start_icon_unselected)
         binding.homeIcon.setBackgroundResource(wR.drawable.ic_baseline_home_24)
         binding.profileIcon.setBackgroundResource(wR.drawable.ic_outline_settings_unselected)
@@ -235,14 +203,9 @@ class MainActivity : AppCompatActivity() {
             binding.profileIcon.setBackgroundResource(wR.drawable.ic_outline_settings_unselected)
             binding.searchImage.setBackgroundResource(wR.drawable.ic_baseline_search_icon)
 
-//            val transaction: FragmentTransaction = manager.beginTransaction()
-//            transaction.replace(wR.id.fragment_layout, FavouriteItemsFragment() , "fav_items_fragment").addToBackStack(null)
-//            transaction.commit()
             if (supportFragmentManager.findFragmentByTag("fav_items_fragment") == null || !supportFragmentManager.findFragmentByTag("fav_items_fragment")?.isVisible!!) {
-                supportFragmentManager.beginTransaction().apply {
-                    replace(wR.id.fragment_layout, FavouriteItemsFragment(), "fav_items_fragment")
-                    commit()
-                }
+
+
             }
         }
         binding.homeCard.setOnClickListener {
@@ -252,11 +215,6 @@ class MainActivity : AppCompatActivity() {
             binding.profileIcon.setBackgroundResource(wR.drawable.ic_outline_settings_unselected)
             binding.searchImage.setBackgroundResource(wR.drawable.ic_baseline_search_icon)
 
-////            if (supportFragmentManager.findFragmentByTag("home_fragment") == null && !supportFragmentManager.findFragmentByTag("home_fragment")?.isVisible!!){
-//                val transaction: FragmentTransaction = manager.beginTransaction()
-//                transaction.replace(wR.id.fragment_layout, HomeFragment() , "home_fragment")
-//                transaction.commit()
-////            }
             if (supportFragmentManager.findFragmentByTag("home_fragment") == null || !supportFragmentManager.findFragmentByTag("home_fragment")?.isVisible!!) {
                 supportFragmentManager.beginTransaction().apply {
                     replace(wR.id.fragment_layout, HomeFragment(), "home_fragment")
@@ -272,9 +230,7 @@ class MainActivity : AppCompatActivity() {
             binding.homeIcon.setBackgroundResource(wR.drawable.ic_outline_home_24)
             binding.searchImage.setBackgroundResource(wR.drawable.ic_baseline_search_icon_selected)
             binding.profileIcon.setBackgroundResource(wR.drawable.ic_outline_settings_unselected)
-//            val transaction: FragmentTransaction = manager.beginTransaction()
-//            transaction.replace(wR.id.fragment_layout, SearchFragment() , "search_fragment")
-//            transaction.commit()
+
             if (supportFragmentManager.findFragmentByTag("search_fragment") == null || !supportFragmentManager.findFragmentByTag("search_fragment")?.isVisible!! ) {
                 supportFragmentManager.beginTransaction().apply {
                     replace(wR.id.fragment_layout, SearchFragment(), "search_fragment")
@@ -288,9 +244,7 @@ class MainActivity : AppCompatActivity() {
              binding.homeIcon.setBackgroundResource(wR.drawable.ic_outline_home_24)
              binding.profileIcon.setBackgroundResource(wR.drawable.ic_baseline_settings_selected)
              binding.searchImage.setBackgroundResource(wR.drawable.ic_baseline_search_icon)
-//             val transaction: FragmentTransaction = manager.beginTransaction()
-//             transaction.replace(wR.id.fragment_layout, SettingsFragment() , "settings_fragment").addToBackStack(null)
-//             transaction.commit()
+
              if (supportFragmentManager.findFragmentByTag("settings_fragment") == null || !supportFragmentManager.findFragmentByTag("settings_fragment")?.isVisible!!) {
                  supportFragmentManager.beginTransaction().apply {
                      replace(wR.id.fragment_layout, SettingsFragment(), "settings_fragment")

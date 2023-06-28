@@ -1,4 +1,4 @@
-package com.example.passgenius.domain.use_cases.dialogs
+package com.example.passgenius.ui.dialogs
 
 import android.app.Dialog
 import android.content.ClipData
@@ -122,12 +122,7 @@ open class ShowBottomDialog(
     }
 
     private fun observeDialogDeleteClick(position: Int, clickInterface: DeleteClickInterface) {
-//        deleteDialogClass?.deleteClick?.observe(lifecycleOwner!!, Observer {
-//            if (it){
-////                actionType?.value = BottomDialogActionType("DELETE",position)
-////                clickInterface.onDeleteClick(position)
-//            }
-//        })
+
     }
 
     }

@@ -11,17 +11,4 @@ object RetrofitInstance {
     private const val baseUrlLogo:String = "https://www.klazify.com/";
 
 
-    fun logoApi(): LogosApi {
-        if (logoRetrofit == null){
-            logoRetrofit = Retrofit.Builder()
-                .baseUrl(baseUrlLogo)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-        }
-
-        return logoRetrofit!!.create(LogosApi::class.java)
-    }
-
-
-
 }

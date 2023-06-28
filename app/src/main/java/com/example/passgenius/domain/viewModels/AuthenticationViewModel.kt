@@ -25,6 +25,7 @@ class AuthenticationViewModel
         this.sharedPreferences  = activity.getSharedPreferences("PROFILE", AppCompatActivity.MODE_PRIVATE)
         getLoggedInUser()
 
+
     }
 
 
@@ -37,7 +38,13 @@ class AuthenticationViewModel
 
     fun updateLoggedInUser(){
         viewModelScope.launch {
-            repository.updateLoggedInUser(sharedPreferences, loggedInUser!!)
+            if (loggedInUser == null){
+                loggedInUser = UserModel("username11", lastSeen = "ACTIVE")
+                repository.updateLoggedInUser(sharedPreferences, loggedInUser!!)
+
+            }else{
+                repository.updateLoggedInUser(sharedPreferences, loggedInUser!!)
+            }
         }
 
     }

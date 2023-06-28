@@ -1,4 +1,4 @@
-package com.example.passgenius.domain.use_cases.dialogs
+package com.example.passgenius.ui.dialogs
 
 import android.app.Dialog
 import android.content.Context
@@ -22,14 +22,6 @@ class AppLockTimeDialog(
     private val adapter:AppLockTimeAdapter = AppLockTimeAdapter(context, appLockInterface, time )
 
 
-    fun registerCallBack(appLockInterface: AppLockTimeInterface){
-
-
-
-
-
-
-    }
 
 
     init {
