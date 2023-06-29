@@ -6,111 +6,128 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+
 import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.Observer
+
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.passgenius.R
-import com.example.passgenius.common.DataHolder
+import com.example.passgenius.common.CurrentCategory
+
 import com.example.passgenius.ui.adapters.AdapterCategories
 import com.example.passgenius.ui.adapters.PassItemAdapter
-import com.example.passgenius.data.dataStates.DataState
+
 import com.example.passgenius.databinding.FragmentHomeBinding
-import com.example.passgenius.domain.interfaces.OnCategoryRVClicks
+
 import com.example.passgenius.domain.models.ItemListModel
-import com.example.passgenius.data.room.daos.LoginItemDao
-import com.example.passgenius.data.room.daos.NoteItemDao
+
 import com.example.passgenius.domain.viewModels.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+
 import kotlin.Comparator
 
 @AndroidEntryPoint
-class HomeFragment : Fragment(), OnCategoryRVClicks {
+class HomeFragment : Fragment() {
 
     private lateinit var categoriesAdapter: AdapterCategories
     private lateinit var binding: FragmentHomeBinding
     private lateinit var itemsAdapter: PassItemAdapter
-    private var currentCategory:String = "All"
-    private lateinit var viewModel: MainViewModel
-    @Inject
-    lateinit var loginDao: LoginItemDao
-    @Inject
-    lateinit var noteDao: NoteItemDao
-    private var selectedPosition: Int = 0
-
+    private lateinit var viewModel :MainViewModel
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_home, container, false)
-        initCategoriesRecyclerView()
         viewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
+        initCategoriesRecyclerView()
         observeItems()
         observeAllItems2()
-
+        observeCurrentCategory()
+        observeSate()
         return binding.root
     }
 
+    private fun observeSate() {
+        viewModel.homeState.observe(requireActivity()){
+            binding.state = it
+        }
+    }
+
+
+    private fun observeCurrentCategory(){
+        viewModel.currentCategory.onEach {
+            viewModel.homeState.value = viewModel.homeState.value?.copy(currentCategory = it)
+           when(it){
+               CurrentCategory.All.category -> {
+
+                   if (viewModel.allItems.value?.isEmpty()!!){
+                       viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = true )
+                   }else{
+                       viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = false)
+                       initRecyclerView(viewModel.allItems.value!!)
+                   }
+
+
+               }
+               CurrentCategory.Logins.category-> {
+
+                   if (viewModel.loginItemsRv.value == null || viewModel.loginItemsRv.value?.isEmpty()!!){
+                       viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = true)
+                   }else{
+                       viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = false)
+                       initRecyclerView(viewModel.loginItemsRv.value!!)
+
+                   }
+
+
+               }
+               CurrentCategory.Notes.category-> {
+
+                   if (viewModel.noteItemsRv.value == null || viewModel.noteItemsRv.value?.isEmpty()!!){
+                       viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = true)
+                   }else{
+                       initRecyclerView(viewModel.noteItemsRv.value!!)
+                       viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = false)
+
+                   }
+
+               }
+               CurrentCategory.Identities.category ->{
+                   if (viewModel.idsItemsRv.value == null || viewModel.idsItemsRv.value?.isEmpty()!!){
+                       viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = true)
+                   }else{
+                       initRecyclerView(viewModel.idsItemsRv.value!!)
+                       viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = false)
+
+                   }
+
+
+               }
+               CurrentCategory.Payments.category->{
+                   if (viewModel.paymentsItemsRv.value == null || viewModel.paymentsItemsRv.value?.isEmpty()!!){
+                       viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = true)
+                   }else{
+                       initRecyclerView(viewModel.paymentsItemsRv.value!!)
+                       viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = false)
+
+                   }
+
+               }
+           }
+
+        }.launchIn(lifecycleScope)
+    }
 
     private fun observeItems(){
 
-        viewModel._allItems.observe(requireActivity(), Observer {
-            when(it){
-                is DataState.Success<MutableList<ItemListModel>> ->{
-                    viewModel.allItems.value = it.data
-                    DataHolder.allItems.value = it.data
-                    when (selectedPosition) {
-                        0 -> { onCategoryClick("All") }
-                        1 -> { onCategoryClick("Logins")}
-                        2 -> { onCategoryClick("Notes") }
-                        3 -> onCategoryClick("Identities")
-                        4 -> onCategoryClick("Payments")
-                    }
-                    viewModel.isLoadingDone = true
-                    binding.progressBar.visibility = View.GONE
-                    binding.mainLayout.visibility =View.VISIBLE
-
-                }
-                is DataState.Loading ->{
-                    binding.progressBar.visibility = View.VISIBLE
-
-                }
-
-                is DataState.Error ->{
-                    Toast.makeText(requireContext(), "Something went wrong" , Toast.LENGTH_SHORT).show()
-                    viewModel.isLoadingDone = true
-                    viewModel.getItemsFromLocalDB()
-                    binding.progressBar.visibility = View.GONE
-                }
-                else -> {}
-            }
-        })
-
-
-    }
-
-    override fun onStart() {
-        super.onStart()
 
     }
 
 
     private fun observeAllItems2(){
-
-        viewModel.allItems.observe(requireActivity(), Observer {
-            if (viewModel.isLoadingDone && it.isNotEmpty()){
-                when (selectedPosition) {
-                    0 -> { onCategoryClick("All") }
-                    1 -> { onCategoryClick("Logins")}
-                    2 -> { onCategoryClick("Notes") }
-                    3 -> onCategoryClick("Identities")
-                    4 -> onCategoryClick("Payments")
-                }
-            }
-        })
 
 
     }
@@ -131,90 +148,13 @@ class HomeFragment : Fragment(), OnCategoryRVClicks {
 
    }
     private fun initCategoriesRecyclerView() {
-
-
-        categoriesAdapter = AdapterCategories(requireContext(),this)
+        categoriesAdapter = AdapterCategories(requireContext(), viewModel::onUserAction,viewModel.categoriesList)
         binding.categoriesRecyclerView.adapter = categoriesAdapter
         binding.categoriesRecyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL,false )
-//        binding.categoriesRecyclerView.layoutManager = LinearLayoutManager(context)
+
     }
 
-    override fun onCategoryClick(category:String) {
-        binding.headerText.text = category
-        currentCategory = category
-        when(category){
-            "All"-> {
-                if (viewModel.allItems.value == null || viewModel.allItems.value?.isEmpty()!!){
-                    binding.emptyListLayout.visibility = View.VISIBLE
-                    binding.itemsRecyclerView.visibility = View.GONE
-                }else{
-                    initRecyclerView(DataHolder.allItems.value!!)
 
-                    binding.emptyListLayout.visibility = View.GONE
-                    binding.itemsRecyclerView.visibility = View.VISIBLE
-                }
-                selectedPosition = 0
-
-            }
-            "Logins"-> {
-
-                if (viewModel.loginItemsRv.value == null || viewModel.loginItemsRv.value?.isEmpty()!!){
-                    binding.emptyListLayout.visibility = View.VISIBLE
-                    binding.itemsRecyclerView.visibility = View.GONE
-                }else{
-                    initRecyclerView(viewModel.loginItemsRv.value!!)
-
-                    binding.emptyListLayout.visibility = View.GONE
-                    binding.itemsRecyclerView.visibility = View.VISIBLE
-                }
-                selectedPosition =1
-
-            }
-            "Notes"-> {
-
-                if (viewModel.noteItemsRv.value == null || viewModel.noteItemsRv.value?.isEmpty()!!){
-                    binding.emptyListLayout.visibility = View.VISIBLE
-                    binding.itemsRecyclerView.visibility = View.GONE
-                }else{
-                    initRecyclerView(viewModel.noteItemsRv.value!!)
-
-                    binding.emptyListLayout.visibility = View.GONE
-                    binding.itemsRecyclerView.visibility = View.VISIBLE
-                }
-                selectedPosition = 2
-            }
-
-            "Identities" ->{
-                if (viewModel.idsItemsRv.value == null || viewModel.idsItemsRv.value?.isEmpty()!!){
-                    binding.emptyListLayout.visibility = View.VISIBLE
-                    binding.itemsRecyclerView.visibility = View.GONE
-                }else{
-                    initRecyclerView(viewModel.idsItemsRv.value!!)
-
-                    binding.emptyListLayout.visibility = View.GONE
-                    binding.itemsRecyclerView.visibility = View.VISIBLE
-                }
-                selectedPosition = 3
-
-            }
-
-            "Payments" ->{
-                if (viewModel.paymentsItemsRv.value == null || viewModel.paymentsItemsRv.value?.isEmpty()!!){
-                    binding.emptyListLayout.visibility = View.VISIBLE
-                    binding.itemsRecyclerView.visibility = View.GONE
-                }else{
-                    initRecyclerView(viewModel.paymentsItemsRv.value!!)
-
-                    binding.emptyListLayout.visibility = View.GONE
-                    binding.itemsRecyclerView.visibility = View.VISIBLE
-                }
-                selectedPosition = 3
-            }
-
-
-
-        }
-    }
 
 
 }

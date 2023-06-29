@@ -43,13 +43,13 @@ class SettingsPageViewModel
 
     private fun getLoggedInUser(){
         viewModelScope.launch {
-            loggedInUser = repository.getLoggedInUser(sharedPreferences)!!
+            loggedInUser = repository.getLoggedInUser()!!
         }
     }
 
     fun updateLoggedInUser(){
         viewModelScope.launch {
-            repository.updateLoggedInUser(sharedPreferences, loggedInUser!!)
+            repository.updateLoggedInUser( loggedInUser!!)
         }
 
     }

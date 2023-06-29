@@ -1,34 +1,32 @@
 package com.example.passgenius.ui.mainPage
 
 import android.content.Intent
-import android.os.Build
+
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
+
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.databinding.DataBindingUtil
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentTransaction
-import androidx.lifecycle.ViewModelProvider
-import com.example.passgenius.data.repository.MyRepository
+import androidx.fragment.app.Fragment
+
+import com.example.passgenius.common.enums.MainScreenTypes
 import com.example.passgenius.databinding.ActivityMainBinding
 import com.example.passgenius.domain.models.LoginItemModel
 import com.example.passgenius.domain.models.SecureNoteModel
-import com.example.passgenius.domain.models.UserModel
+
 import com.example.passgenius.domain.viewModels.MainViewModel
 import com.example.passgenius.ui.ItemPage.AddNewItemActivity
 import com.example.passgenius.ui.authenticationPage.AuthenticationActivity
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDateTime
-import java.time.temporal.ChronoUnit
-import java.util.Objects
-import javax.inject.Inject
+
 import com.example.passgenius.R as wR
 
 
+@Suppress("WHEN_ENUM_CAN_BE_NULL_IN_JAVA")
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
@@ -39,37 +37,31 @@ class MainActivity : AppCompatActivity() {
     lateinit var binding:ActivityMainBinding
     private var isClicked = false
     private lateinit var i:Intent
-    private lateinit var  viewModel: MainViewModel
-    private var user:UserModel? = UserModel()
-    private val manager: FragmentManager = supportFragmentManager
-    val transaction: FragmentTransaction = manager.beginTransaction()
+    private val viewModel: MainViewModel by viewModels()
 
-    private val mainViewModel: MainViewModel by viewModels()
-
-    @Inject
-    lateinit var repository: MyRepository
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
-
         window.statusBarColor = resources.getColor(wR.color.main_activity_background_color)
-        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
-        viewModel.initViewModel(this, manager)
+        viewModel.initViewModel()
         viewModel.lifecycleOwner = this
-        viewModel.observeAllItems()
         binding = DataBindingUtil.setContentView(this, wR.layout.activity_main)
-//        authOnCreate()
         handleAddButtonClick()
+        observeState()
+        binding.viewModel = viewModel
         i = Intent(this, AddNewItemActivity::class.java)
         onAddCategoriesClicks()
         onBottomNavClicks()
-//        viewModel.loggedInUser?.favourites = arrayListOf("644c61a7ea1c970a42384a2c", "644c7a9fb0277a4a0675584a")
-//        viewModel.updateLoggedInUser()
-
-
+        checkAuthentication()
 
     }
 
+
+    private fun observeState(){
+        viewModel.mainActivityState.observe(this){
+            binding.state = it
+        }
+    }
 
 
 
@@ -81,14 +73,14 @@ class MainActivity : AppCompatActivity() {
 
             viewModel.getLoggedInUser()
 
-            if(viewModel.loggedInUser?.lastSeen != "ACTIVE"){
-                val minutesSinceLastSeen:Long = LocalDateTime.parse(viewModel.loggedInUser?.lastSeen).until(LocalDateTime.now(), ChronoUnit.MINUTES)
-                if ( viewModel.loggedInUser?.settings?.lockAppTime != -1 && minutesSinceLastSeen >= viewModel.loggedInUser?.settings?.lockAppTime!!){
-                    viewModel.isExitingTheApp = false
-                    startActivity(Intent(applicationContext, AuthenticationActivity::class.java))
-                    finish()
-                }
-            }
+//            if(viewModel.loggedInUser?.lastSeen != "ACTIVE"){
+//                val minutesSinceLastSeen:Long = LocalDateTime.parse(viewModel.loggedInUser?.lastSeen).until(LocalDateTime.now(), ChronoUnit.MINUTES)
+//                if ( viewModel.loggedInUser?.settings?.lockAppTime != -1 && minutesSinceLastSeen >= viewModel.loggedInUser?.settings?.lockAppTime!!){
+//                    viewModel.isExitingTheApp = false
+//                    startActivity(Intent(applicationContext, AuthenticationActivity::class.java))
+//                    finish()
+//                }
+//            }
 
         }catch (e:java.lang.Exception){
             Log.e("auth", e.toString())
@@ -97,13 +89,65 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    private fun observeCurrentScreen(){
+        viewModel.mainActivityState.value?.currentScreen?.observe(this){
+
+            when(it){
+                MainScreenTypes.HOME -> {
+                    switchFragment(HomeFragment())
+                    if (binding.bottomNavigationView.selectedItemId != wR.id.home_icon){
+                        binding.bottomNavigationView.selectedItemId = wR.id.home_icon
+
+                    }
+                }
+                MainScreenTypes.FAVORITE -> {
+                    switchFragment(FavouriteItemsFragment())
+                    if (binding.bottomNavigationView.selectedItemId != wR.id.favorite_icon){
+                        binding.bottomNavigationView.selectedItemId = wR.id.favorite_icon
+
+                    }
+
+                }
+                MainScreenTypes.SEARCH -> {
+                    switchFragment(SearchFragment())
+                    if (binding.bottomNavigationView.selectedItemId != wR.id.search_icon){
+                        binding.bottomNavigationView.selectedItemId = wR.id.search_icon
+
+                    }
+
+                }
+                MainScreenTypes.SETTINGS -> {
+                    switchFragment(SettingsFragment())
+                    if (binding.bottomNavigationView.selectedItemId != wR.id.settings_icon){
+                        binding.bottomNavigationView.selectedItemId = wR.id.settings_icon
+
+                    }
+
+                }
+            }
+        }
+    }
+
+
+    override fun onBackPressed() {
+
+        if (viewModel.mainActivityState.value?.currentScreen?.value != MainScreenTypes.HOME){
+            viewModel.mainActivityState.value?.currentScreen?.value = MainScreenTypes.HOME
+
+        }else{
+            super.onBackPressed()
+        }
+    }
+    private fun switchFragment(fragment: Fragment){
+        supportFragmentManager.beginTransaction().apply {
+            replace(wR.id.fragment_layout, fragment, fragment.tag).commit()
+        }
+    }
 
     override fun onStart() {
         super.onStart()
         viewModel.isExitingTheApp = true
         authUserOnStart()
-        mainViewModel.reinitItems()
-
     }
 
     override fun onPause() {
@@ -117,36 +161,19 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun handleAddButtonClick() {
-        binding.addButton2.animate().rotation(45f).duration = 400
 
-        binding.addButton.setOnClickListener {
-            if (!isClicked){
-
-                binding.addCategoriesLayout.visibility = View.VISIBLE
-                binding.allLayout.visibility = View.VISIBLE
-                binding.paymentsLayout.visibility = View.GONE
-                isClicked = true
-
-
-            }
-        }
-        binding.addButton2.setOnClickListener {
-//            binding.addButton.animate().rotation(45f).duration = 400
-            binding.addCategoriesLayout.visibility = View.GONE
-            isClicked=false
-            binding.allLayout.visibility = View.VISIBLE
-            binding.paymentsLayout.visibility = View.GONE
-        }
-        binding.addCategoriesLayout.setOnClickListener {
-//            binding.addButton.animate().rotation(-90f).duration = 400
-            binding.addCategoriesLayout.visibility = View.GONE
-            isClicked= false
-            binding.allLayout.visibility = View.VISIBLE
-            binding.paymentsLayout.visibility = View.GONE
-        }
     }
 
 
+
+    private fun checkAuthentication(){
+        if (!viewModel.mainActivityState.value?.isAuthenticated!!){
+            startActivity(Intent(this, AuthenticationActivity::class.java))
+            finish()
+        }else{
+            observeCurrentScreen()
+        }
+    }
     private fun onAddCategoriesClicks(){
 
 
@@ -171,8 +198,6 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-
-
     }
 
     private fun beginActivity(name:String){
@@ -187,78 +212,17 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onBottomNavClicks() {
+     binding.bottomNavigationView.setOnItemSelectedListener {
 
-        try {
+         when(it.title?.toString()){
+              "Home" -> viewModel.mainActivityState.value?.currentScreen?.value = MainScreenTypes.HOME
+              "Favorite" -> viewModel.mainActivityState.value?.currentScreen?.value = MainScreenTypes.FAVORITE
+              "Search" -> viewModel.mainActivityState.value?.currentScreen?.value = MainScreenTypes.SEARCH
+              "Settings" -> viewModel.mainActivityState.value?.currentScreen?.value = MainScreenTypes.SETTINGS
+         }
+         true
+     }
 
-        binding.starIcon.setBackgroundResource(wR.drawable.start_icon_unselected)
-        binding.homeIcon.setBackgroundResource(wR.drawable.ic_baseline_home_24)
-        binding.profileIcon.setBackgroundResource(wR.drawable.ic_outline_settings_unselected)
-
-
-
-        binding.favoritesCard.setOnClickListener {
-
-            binding.starIcon.setBackgroundResource(wR.drawable.star_selected_icon)
-            binding.homeIcon.setBackgroundResource(wR.drawable.ic_outline_home_24)
-            binding.profileIcon.setBackgroundResource(wR.drawable.ic_outline_settings_unselected)
-            binding.searchImage.setBackgroundResource(wR.drawable.ic_baseline_search_icon)
-
-            if (supportFragmentManager.findFragmentByTag("fav_items_fragment") == null || !supportFragmentManager.findFragmentByTag("fav_items_fragment")?.isVisible!!) {
-
-
-            }
-        }
-        binding.homeCard.setOnClickListener {
-
-            binding.starIcon.setBackgroundResource(wR.drawable.start_icon_unselected)
-            binding.homeIcon.setBackgroundResource(wR.drawable.ic_baseline_home_24)
-            binding.profileIcon.setBackgroundResource(wR.drawable.ic_outline_settings_unselected)
-            binding.searchImage.setBackgroundResource(wR.drawable.ic_baseline_search_icon)
-
-            if (supportFragmentManager.findFragmentByTag("home_fragment") == null || !supportFragmentManager.findFragmentByTag("home_fragment")?.isVisible!!) {
-                supportFragmentManager.beginTransaction().apply {
-                    replace(wR.id.fragment_layout, HomeFragment(), "home_fragment")
-                    commit()
-                }
-            }
-
-        }
-
-        binding.searchCard.setOnClickListener {
-
-            binding.starIcon.setBackgroundResource(wR.drawable.start_icon_unselected)
-            binding.homeIcon.setBackgroundResource(wR.drawable.ic_outline_home_24)
-            binding.searchImage.setBackgroundResource(wR.drawable.ic_baseline_search_icon_selected)
-            binding.profileIcon.setBackgroundResource(wR.drawable.ic_outline_settings_unselected)
-
-            if (supportFragmentManager.findFragmentByTag("search_fragment") == null || !supportFragmentManager.findFragmentByTag("search_fragment")?.isVisible!! ) {
-                supportFragmentManager.beginTransaction().apply {
-                    replace(wR.id.fragment_layout, SearchFragment(), "search_fragment")
-                    commit()
-                }
-            }
-        }
-
-         binding.profileCard.setOnClickListener {
-             binding.starIcon.setBackgroundResource(wR.drawable.start_icon_unselected)
-             binding.homeIcon.setBackgroundResource(wR.drawable.ic_outline_home_24)
-             binding.profileIcon.setBackgroundResource(wR.drawable.ic_baseline_settings_selected)
-             binding.searchImage.setBackgroundResource(wR.drawable.ic_baseline_search_icon)
-
-             if (supportFragmentManager.findFragmentByTag("settings_fragment") == null || !supportFragmentManager.findFragmentByTag("settings_fragment")?.isVisible!!) {
-                 supportFragmentManager.beginTransaction().apply {
-                     replace(wR.id.fragment_layout, SettingsFragment(), "settings_fragment")
-                     commit()
-
-                 }
-
-             }
-        }
-
-        }
-        catch (e:Exception){
-            Log.e("TAG", e.toString())
-        }
     }
 
 

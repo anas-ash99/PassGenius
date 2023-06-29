@@ -3,8 +3,6 @@ package com.example.passgenius.domain.repository
 import android.content.SharedPreferences
 import android.content.SharedPreferences.Editor
 import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
-import com.example.passgenius.common.enums.AddItemType
 import com.example.passgenius.data.apis.ItemsApi
 import com.example.passgenius.data.dataStates.DataState
 import com.example.passgenius.domain.models.*
@@ -12,51 +10,37 @@ import com.example.passgenius.data.repository.MyRepository
 import com.example.passgenius.data.room.daos.LoginItemDao
 import com.example.passgenius.data.room.daos.NoteItemDao
 import com.google.gson.Gson
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
 import retrofit2.awaitResponse
 import java.io.IOException
 import javax.inject.Inject
-import kotlin.math.log
 
 class MyRepoImpl @Inject constructor(
     private val itemsApi: ItemsApi,
     private val loginItemDao: LoginItemDao,
-    private val noteItemDao: NoteItemDao
+    private val noteItemDao: NoteItemDao,
+    private val mPrefs: SharedPreferences
 
 ): MyRepository {
 
-    override suspend fun convertItems(): Flow<DataState<MutableList<ItemListModel>>> = channelFlow{
-        var items:MutableList<ItemListModel> = mutableListOf()
+    override suspend fun getItemsFromLocalDB(): Flow<DataState<MutableList<ItemListModel>>> = channelFlow{
+        val items:MutableList<ItemListModel> = mutableListOf()
         send(DataState.Loading)
         try {
 
+            loginItemDao.getItemsOrderedByName().onEach {
+                items.add(ItemListModel(name = it.itemName, secondaryName = it.email, loginItem = it, type = "LOGIN"))
+            }
 
-
-            async {
-                loginItemDao.getItemsOrderedByName().onEach {
-                    items.add(ItemListModel(name = it.itemName, secondaryName = it.email, loginItem = it, type = "LOGIN"))
-
-                }
-            }.await()
-
-
-            async {
-                noteItemDao.getItemsOrderedByTitle().onEach {
-                    items.add(ItemListModel(name = it.title, secondaryName = "${it.content}", noteItem = it, type = "NOTE"))
-
-                }
-
-
-            }.await()
+            noteItemDao.getItemsOrderedByTitle().onEach {
+                items.add(ItemListModel(name = it.title, secondaryName = it.content, noteItem = it, type = "NOTE"))
+            }
 
             send(DataState.Success(items))
         }catch (e:Exception){
-            println(e)
             send(DataState.Error(e))
         }
 
@@ -95,7 +79,6 @@ class MyRepoImpl @Inject constructor(
 
             }else{
                 emit(DataState.Error(java.lang.Exception()))
-                println("fail to save")
             }
         }catch (e:Exception){
             emit(DataState.Error(e))
@@ -106,7 +89,7 @@ class MyRepoImpl @Inject constructor(
      override suspend fun getNoteItemsRV(): MutableList<ItemListModel> {
         val items:MutableList<ItemListModel> = mutableListOf()
         noteItemDao.getItemsOrderedByTitle().onEach {
-            items.add(ItemListModel(name = it.title, secondaryName = "${it.content}", noteItem = it, type = "NOTE"))
+            items.add(ItemListModel(name = it.title, secondaryName = it.content, noteItem = it, type = "NOTE"))
         }
         return items
     }
@@ -133,9 +116,10 @@ class MyRepoImpl @Inject constructor(
 
     override suspend fun getAllItems():Flow<DataState<MutableList<ItemListModel>>> = flow {
         emit(DataState.Loading)
-        var items:MutableList<ItemListModel> = mutableListOf()
+
         try {
-            var res = itemsApi.getLoginItemsRemote().awaitResponse()
+            val items:MutableList<ItemListModel> = mutableListOf()
+            val res = itemsApi.getLoginItemsRemote().awaitResponse()
              if (res.isSuccessful){
 
                 loginItemDao.deleteAllItems()
@@ -154,34 +138,37 @@ class MyRepoImpl @Inject constructor(
                     items.add(ItemListModel(name = it.itemName, secondaryName = it.email, loginItem = it, type = "LOGIN"))
                 }
                  noteItemDao.getItemsOrderedByTitle().onEach {
-                    items.add(ItemListModel(name = it.title, secondaryName = "${it.content}", noteItem = it, type = "NOTE"))
+                    items.add(ItemListModel(name = it.title, secondaryName = it.content, noteItem = it, type = "NOTE"))
                 }
 
                 emit(DataState.Success(items))
             }
+
         }catch (e:HttpException){
-//              emit(DataState.Error(e.message() + ":an unexpected error occurred"))
             Log.e("repo", e.toString())
             emit(DataState.Error(e))
+
         }catch (e: IOException){
+            /// no internet connection error
             Log.e("repo", e.toString())
             emit(DataState.Error(e))
+
 
         }
     }
 
-    override suspend fun getLoggedInUser(mPrefs:SharedPreferences): UserModel? {
+    override suspend fun getLoggedInUser(): UserModel? {
         val gson = Gson()
         val json = mPrefs.getString("LoggedInUser", "")
         return gson.fromJson(json, UserModel::class.java)
     }
 
-    override suspend fun updateLoggedInUser(mPrefs: SharedPreferences, user: UserModel) {
+    override suspend fun updateLoggedInUser(user: UserModel) {
         val prefsEditor: Editor = mPrefs.edit()
         val gson = Gson()
         val json = gson.toJson(user)
         prefsEditor.putString("LoggedInUser", json)
-        prefsEditor.commit()
+        prefsEditor.apply()
     }
 
 
@@ -189,11 +176,7 @@ class MyRepoImpl @Inject constructor(
 
 
     override suspend fun getNoteItemsRemote(): Flow<MutableList<SecureNoteModel>> = flow {
-        try {
 
-        }catch (e:Exception){
-
-        }
     }
 
     override suspend fun getLoginItemsRemote(): Flow<MutableList<LoginItemModel>> = flow {

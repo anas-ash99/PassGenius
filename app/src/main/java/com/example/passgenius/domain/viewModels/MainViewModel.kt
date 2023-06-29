@@ -1,22 +1,23 @@
 package com.example.passgenius.domain.viewModels
 
 
-import android.app.Activity
-import android.content.Intent
-import android.content.SharedPreferences
-import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentTransaction
+
 import androidx.lifecycle.*
-import com.example.passgenius.R
+import com.example.passgenius.common.states.HomePageState
+
+import com.example.passgenius.common.Constants
+import com.example.passgenius.common.CurrentCategory
 import com.example.passgenius.common.DataHolder
+import com.example.passgenius.common.UserActions
+import com.example.passgenius.common.enums.MainScreenTypes
+import com.example.passgenius.common.states.MainActivityState
 import com.example.passgenius.data.dataStates.DataState
 import com.example.passgenius.data.repository.MyRepository
 import com.example.passgenius.domain.models.*
-import com.example.passgenius.ui.authenticationPage.AuthenticationActivity
-import com.example.passgenius.ui.mainPage.HomeFragment
+import com.example.passgenius.ui.adapters.AdapterCategories
+
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -27,7 +28,12 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     private val repository: MyRepository
     ): ViewModel() {
-    val _allItems: MutableLiveData<DataState<MutableList<ItemListModel>>> = MutableLiveData()
+
+
+    val homeState = MutableLiveData(HomePageState())
+    val categoriesList = Constants.categoriesList
+    val mainActivityState = MutableLiveData(MainActivityState())
+    val currentCategory = MutableStateFlow<String?>(null)
     val loginItems: MutableLiveData<MutableList<LoginItemModel>> = MutableLiveData()
         init {
             loginItems.value = mutableListOf()
@@ -36,14 +42,8 @@ class MainViewModel @Inject constructor(
     var loggedInUser:UserModel? = null
     var lifecycleOwner:LifecycleOwner? = null
 
-    var isLoadingDone:Boolean = false
-    val noteItems: MutableLiveData<MutableList<SecureNoteModel>> by lazy {
-        MutableLiveData<MutableList<SecureNoteModel>>()
-    }
+
     val favouriteItems: MutableLiveData<MutableList<ItemListModel>> by lazy {
-        MutableLiveData<MutableList<ItemListModel>>()
-    }
-    val itemsList: MutableLiveData<MutableList<ItemListModel>> by lazy {
         MutableLiveData<MutableList<ItemListModel>>()
     }
 
@@ -60,47 +60,73 @@ class MainViewModel @Inject constructor(
         MutableLiveData<MutableList<ItemListModel>>()
     }
 
-    val allItems: MutableLiveData<MutableList<ItemListModel>> = MutableLiveData()
-         init {
-             allItems.value = mutableListOf()
-         }
-    lateinit var sharedPreferences:SharedPreferences
+    val allItems: MutableLiveData<MutableList<ItemListModel>> = MutableLiveData(mutableListOf())
 
     var isExitingTheApp: Boolean = true
 
-    fun initViewModel(activity: Activity, manger:FragmentManager){
-        this.sharedPreferences  = activity.getSharedPreferences("PROFILE", AppCompatActivity.MODE_PRIVATE)
+    fun initViewModel(){
         getLoggedInUser()
-        initItemsValues()
-        authOnCreate(activity,manger)
+        if (!mainActivityState.value?.isActivityCreated!!){
+            initItemsValues()
+            authOnCreate()
+
+        }
         DataHolder.loggedInUser = loggedInUser
 
     }
 
 
-    fun observeAllItems(){
-
+    fun onUserAction(action: UserActions){
+        when(action){
+            is UserActions.ChoseItemsCategory -> {changeSelectedCategory(action.adapter,action.position)}
+            is UserActions.NavigateScreens -> {}
+            UserActions.PlusOrXClick -> {}
+        }
     }
 
+
+    private fun changeSelectedCategory(adapter:AdapterCategories, position:Int){
+        categoriesList[position].isSelected = true
+        adapter.notifyChang(position)
+        categoriesList.onEachIndexed{ index,item ->
+            if (item.isSelected && index != position){
+                item.isSelected = false
+                adapter.notifyChang(index)
+            }
+        }
+        currentCategory.value = categoriesList[position].name
+    }
+    fun onPaymentsCategoryClick(){
+        mainActivityState.value = mainActivityState.value?.copy(isPaymentLayoutShown = true)
+    }
+    fun onAddClick(){
+        mainActivityState.value = mainActivityState.value?.copy(plusButton = mainActivityState.value?.plusButton == false, isPaymentLayoutShown = false)
+    }
     fun getLoggedInUser(){
         viewModelScope.launch {
-            loggedInUser = repository.getLoggedInUser(sharedPreferences)
+            loggedInUser = repository.getLoggedInUser()
         }
     }
-
     fun updateLoggedInUser(){
         viewModelScope.launch {
-            repository.updateLoggedInUser(sharedPreferences, loggedInUser!!)
+            repository.updateLoggedInUser(loggedInUser!!)
         }
 
     }
-
 
     private fun initItemsValues(){
         viewModelScope.launch {
             repository.getAllItems().onEach {
-                _allItems.value = it
-
+                when(it){
+                    is DataState.Error -> getItemsFromLocalDB()
+                    DataState.Loading -> homeState.value = homeState.value?.copy(isLoading = true)
+                    is DataState.Success -> {
+                        allItems.value = it.data!!
+                        currentCategory.value = CurrentCategory.All.category
+                        homeState.value = homeState.value?.copy(isLoading = false)
+                        mainActivityState.value?.isActivityCreated = true
+                    }
+                }
             }.launchIn(viewModelScope)
         }
         viewModelScope.launch {
@@ -122,57 +148,34 @@ class MainViewModel @Inject constructor(
 
 
 
-    fun getItemsFromLocalDB(){
 
-        viewModelScope.launch {
-
-            async {
-                repository.convertItems().onEach {
-                    _allItems.value = it
-                }.launchIn(viewModelScope)
-            }
-
-
-            async {
-               loginItemsRv.value = repository.getLoginItemsRV()
-            }
-
-            async {
-               noteItemsRv.value = repository.getNoteItemsRV()
-            }
-        }
-
-        }
-
-    fun reinitItems() {
-        allItems.value = DataHolder.allItems.value
-        loginItemsRv.value = allItems.value?.filter {
-            it.type == "LOGIN"
-        } as MutableList<ItemListModel>?
-        noteItemsRv.value = allItems.value?.filter {
-            it.type == "NOTE"
-        } as MutableList<ItemListModel>?
-    }
-
-
-
-
-
-
-    private fun authOnCreate(activity: Activity, manager: FragmentManager){
+    private fun authOnCreate(){
         if (loggedInUser?.lastSeen != "ACTIVE"){
             isExitingTheApp = false
-            activity.startActivity(Intent(activity, AuthenticationActivity::class.java))
-            activity.finish()
+            mainActivityState.value?.isAuthenticated = true
+            mainActivityState.value?.currentScreen?.value = MainScreenTypes.HOME
 
         }else{
-
-            val transaction: FragmentTransaction = manager.beginTransaction()
-            transaction.replace(R.id.fragment_layout, HomeFragment() , "home_fragment")
-            transaction.commit()
-
+            mainActivityState.value?.isAuthenticated = false
         }
 
+    }
+
+    private fun getItemsFromLocalDB() {
+        viewModelScope.launch {
+            repository.getItemsFromLocalDB().onEach {
+                when(it){
+                    is DataState.Error -> homeState.value = homeState.value?.copy(isLoading = false, isError = true)
+                    DataState.Loading -> {}
+                    is DataState.Success -> {
+                        allItems.value = it.data!!
+                        currentCategory.value = CurrentCategory.All.category
+                        homeState.value = homeState.value?.copy(isLoading = false)
+                        mainActivityState.value?.isActivityCreated = true
+                    }
+                }
+            }.launchIn(viewModelScope)
+        }
 
     }
 
@@ -180,15 +183,4 @@ class MainViewModel @Inject constructor(
 }
 
 
-//        val db = RoomInstance.getDB(context)
-//        val emptyList1:MutableList<ItemListModel> = mutableListOf()
-//        val emptyList3:MutableList<ItemListModel> = mutableListOf()
-//        val emptyList4:MutableList<ItemListModel> = mutableListOf()
-//        val emptyList5:MutableList<ItemListModel> = mutableListOf()
-//        val emptyList2:MutableList<SecureNoteModel> = mutableListOf()
-//        allItems.value = emptyList1
-//        noteItems.value = emptyList2
-//        noteItemsRv.value = emptyList3
-//        loginItemsRv.value = emptyList4
-//        favouriteItems.value = emptyList5
 

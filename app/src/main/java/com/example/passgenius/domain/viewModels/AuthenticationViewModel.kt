@@ -32,7 +32,7 @@ class AuthenticationViewModel
 
     private fun getLoggedInUser(){
         viewModelScope.launch {
-            loggedInUser = repository.getLoggedInUser(sharedPreferences)
+            loggedInUser = repository.getLoggedInUser()
         }
     }
 
@@ -40,10 +40,10 @@ class AuthenticationViewModel
         viewModelScope.launch {
             if (loggedInUser == null){
                 loggedInUser = UserModel("username11", lastSeen = "ACTIVE")
-                repository.updateLoggedInUser(sharedPreferences, loggedInUser!!)
+                repository.updateLoggedInUser( loggedInUser!!)
 
             }else{
-                repository.updateLoggedInUser(sharedPreferences, loggedInUser!!)
+                repository.updateLoggedInUser(loggedInUser!!)
             }
         }
 
