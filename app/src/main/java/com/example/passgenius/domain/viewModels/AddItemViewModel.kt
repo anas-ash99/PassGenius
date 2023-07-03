@@ -24,12 +24,13 @@ import kotlin.math.log
 
 @HiltViewModel
 @ExperimentalCoroutinesApi
-class AddItemViewModel @Inject constructor  (
+class AddItemViewModel @Inject constructor(
     private val repository: MyRepository
-        ): ViewModel() {
+    ): ViewModel() {
     var loginItem: LoginItemModel = LoginItemModel()
     var noteItem: SecureNoteModel = SecureNoteModel()
     var item:ItemListModel? = null
+    var pageAction:String? = ""
     val saveLoginItemResponse:MutableLiveData<DataState<LoginItemModel>> by lazy {
         MutableLiveData<DataState<LoginItemModel>>()
     }
@@ -47,7 +48,7 @@ class AddItemViewModel @Inject constructor  (
            }.launchIn(viewModelScope)
        }
        item = ItemListModel(loginItem.itemName, loginItem.email, "LOGIN", loginItem = loginItem)
-       DataHolder.allItems.value?.add(item!!)
+       DataHolder.allItems.add(item!!)
 
 
     }
@@ -59,7 +60,7 @@ class AddItemViewModel @Inject constructor  (
             }.launchIn(viewModelScope)
         }
         item = ItemListModel(noteItem.title, noteItem.content, "NOTE", noteItem = noteItem)
-        DataHolder.allItems.value?.add(item!!)
+        DataHolder.allItems.add(item!!)
 
     }
 
@@ -67,14 +68,14 @@ class AddItemViewModel @Inject constructor  (
         GlobalScope.launch {
             repository.deleteNoteItem(noteItem)
         }
-        DataHolder.allItems.value?.remove(item)
+        DataHolder.allItems.remove(item)
     }
 
     fun deleteLoginItem(){
-        GlobalScope.launch {
+        viewModelScope.launch {
             repository.deleteLoginItem(loginItem)
         }
-        DataHolder.allItems.value?.remove(item)
+        DataHolder.allItems.remove(item)
     }
 
 }

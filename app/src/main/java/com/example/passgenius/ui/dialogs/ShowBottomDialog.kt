@@ -1,5 +1,6 @@
 package com.example.passgenius.ui.dialogs
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -12,44 +13,41 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.cardview.widget.CardView
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.MutableLiveData
-import com.example.passgenius.common.DeleteClickInterface
 import com.example.passgenius.R
-import com.example.passgenius.common.enums.AddItemType
-import com.example.passgenius.common.enums.BottomDialogActionType
+import com.example.passgenius.common.UserActions
 import com.example.passgenius.common.extension_methods.StringMethods.shortName
+import com.example.passgenius.domain.models.ItemListModel
 import com.example.passgenius.domain.models.LoginItemModel
 import com.example.passgenius.domain.models.SecureNoteModel
 import de.hdodenhof.circleimageview.CircleImageView
 
 open class ShowBottomDialog(
     var context: Context,
-    var itemType: AddItemType,
-    var lifecycleOwner: LifecycleOwner? = null,
-    var loginItem: LoginItemModel = LoginItemModel(),
-    var noteItem: SecureNoteModel = SecureNoteModel(),
-    deleteInterface: DeleteClickInterface
+    val userActions: (UserActions)->Unit,
 ){
+
+    var loginItem: LoginItemModel = LoginItemModel()
+    var noteItem: SecureNoteModel = SecureNoteModel()
     var dialog:Dialog = Dialog(context)
-    val actionType:MutableLiveData<BottomDialogActionType>  =MutableLiveData()
-//    private val deleteDialogClass:CenterDialog = CenterDialog(context,itemType, deleteInterface = deleteInterface)
     private var  itemName:TextView
     private var  itemImage:CircleImageView
     private var  logoText:TextView
+    private var  text1:TextView
+    private var  text2:TextView
+    private var  text3:TextView
     private var deleteCard:LinearLayout
     private var layout1:LinearLayout
     private var layout2:LinearLayout
     private var layout3:LinearLayout
     private var logoTextCard: CardView
-    private var clipBoard: ClipboardManager = context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    private var clipBoard: ClipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     init {
-        dialog?.requestWindowFeature(Window.FEATURE_NO_TITLE)
-        dialog?.setContentView(R.layout.dialog_pass_item)
-        dialog?.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-        dialog?.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog?.window?.attributes?.windowAnimations = R.style.DialogAnimation
-        dialog?.window?.setGravity(Gravity.BOTTOM)
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
+        dialog.setContentView(R.layout.dialog_pass_item)
+        dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.window?.attributes?.windowAnimations = R.style.DialogAnimation
+        dialog.window?.setGravity(Gravity.BOTTOM)
         itemName= dialog.findViewById(R.id.itemName)
         itemImage = dialog.findViewById(R.id.itemImage)
         logoText = dialog.findViewById(R.id.LogoText)
@@ -57,72 +55,93 @@ open class ShowBottomDialog(
         layout1 = dialog.findViewById(R.id.layout1)
         layout2= dialog.findViewById(R.id.layout2)
         layout3 = dialog.findViewById(R.id.layout3)
+        text1 = dialog.findViewById(R.id.text1)
+        text2 = dialog.findViewById(R.id.text2)
+        text3 = dialog.findViewById(R.id.text3)
         logoTextCard = dialog.findViewById(R.id.LogoTextCard)
 
+        onDialogDismiss()
 
     }
 
 
-    fun showDialog(position: Int, deleteInterface: DeleteClickInterface){
-        when(itemType){
-            AddItemType.LOGIN->{
 
-//                deleteDialogClass.loginItemModel = loginItem!!
+
+
+    @SuppressLint("SetTextI18n")
+    fun showDialog(item:ItemListModel){
+
+        setHeaderValues(item.name)
+        when(item.type){
+            "LOGIN" ->{
+                loginItem = item.loginItem
                 layout3.visibility = View.VISIBLE
 
-                setHeaderValues(loginItem)
-                deleteCard.setOnClickListener {
-//                    actionType?.value = BottomDialogActionType("DELETE",position)
-                    dialog.hide()
-//                    deleteDialogClass.itemRVPosition = position
-//                    deleteDialogClass.dialog.show()
-                    observeDialogDeleteClick(position, deleteInterface)
-                }
-
-                layout3.setOnClickListener {
-                    var clip: ClipData = ClipData.newPlainText("username",loginItem.password )
-                    clipBoard.setPrimaryClip(clip)
-                    Toast.makeText(context, "Copied to clipboard.", Toast.LENGTH_SHORT).show()
-                }
-
                 layout1.setOnClickListener {
-                    var clip: ClipData = ClipData.newPlainText("email",loginItem.email )
-                    clipBoard.setPrimaryClip(clip)
-                    Toast.makeText(context, "Copied to clipboard.", Toast.LENGTH_SHORT).show()
+
+                    copyToClipboard("email", item.loginItem.email)
+
                 }
+
                 layout2.setOnClickListener {
-                    var clip: ClipData = ClipData.newPlainText("name",loginItem.username )
-                    clipBoard.setPrimaryClip(clip)
-                    Toast.makeText(context, "Copied to clipboard.", Toast.LENGTH_SHORT).show()
+                    copyToClipboard("name", item.loginItem.username)
+
+                }
+                layout3.setOnClickListener {
+                    copyToClipboard("password", item.loginItem.password)
                 }
             }
-            AddItemType.SECURE_NOTE ->{
+            "NOTE"->{
+                layout3.visibility = View.GONE
+                text1.text = "Copy Title"
+                text2.text = "Copy content"
+                layout1.setOnClickListener {
+                    copyToClipboard("title", item.noteItem.title)
+                }
 
-
-
+                layout2.setOnClickListener {
+                    copyToClipboard("content",item.noteItem.content)
+                }
             }
-            else->{
 
-            }
         }
-
+        onDeleteItemClick()
         dialog.show()
     }
 
-    private fun setHeaderValues(item: LoginItemModel) {
 
-//            itemImage.visibility = View.VISIBLE
-//            logoTextCard.visibility = View.GONE
-////            Glide.with(context).load(item.imageUrl).into(itemImage)
-            itemImage.visibility = View.GONE
-            logoTextCard.visibility = View.VISIBLE
-            logoText.text = item.itemName.shortName()
-            itemName.text = item.itemName
-
+    private fun onDeleteItemClick(){
+        deleteCard.setOnClickListener {
+            userActions(UserActions.DeleteItem)
+            userActions(UserActions.DismissDialog)
+            dialog.hide()
+        }
     }
 
-    private fun observeDialogDeleteClick(position: Int, clickInterface: DeleteClickInterface) {
 
+    private fun onDialogDismiss(){
+        dialog.setOnDismissListener {
+            userActions(UserActions.DismissDialog)
+            loginItem = LoginItemModel()
+            noteItem = SecureNoteModel()
+        }
     }
 
+
+    private fun setHeaderValues(name:String) {
+        itemImage.visibility = View.GONE
+        logoTextCard.visibility = View.VISIBLE
+        logoText.text = name.shortName()
+        itemName.text = name
     }
+
+    private fun copyToClipboard(label:String, toCopy:String){
+        val clip: ClipData = ClipData.newPlainText(label, toCopy )
+        clipBoard.setPrimaryClip(clip)
+        Toast.makeText(context, "Copied to clipboard.", Toast.LENGTH_SHORT).show()
+    }
+
+
+
+
+}

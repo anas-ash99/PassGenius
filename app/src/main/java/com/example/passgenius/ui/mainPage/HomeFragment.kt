@@ -1,5 +1,6 @@
 package com.example.passgenius.ui.mainPage
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -13,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.passgenius.R
+import com.example.passgenius.common.Constants.ITEM_PAGE_REQUEST_CODE
 import com.example.passgenius.common.CurrentCategory
 
 import com.example.passgenius.ui.adapters.AdapterCategories
@@ -23,6 +25,7 @@ import com.example.passgenius.databinding.FragmentHomeBinding
 import com.example.passgenius.domain.models.ItemListModel
 
 import com.example.passgenius.domain.viewModels.MainViewModel
+import com.example.passgenius.ui.ItemPage.AddNewItemActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -43,11 +46,26 @@ class HomeFragment : Fragment() {
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_home, container, false)
         viewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
         initCategoriesRecyclerView()
-        observeItems()
-        observeAllItems2()
         observeCurrentCategory()
         observeSate()
+        observeDeleteItem()
         return binding.root
+    }
+
+    private fun observeDeleteItem() {
+        viewModel.deleteItem.observe(requireActivity()){
+
+            if (it){
+                viewModel.mainActivityState.value?.currentShownDialogItemPosition?.let { pos->
+
+                    itemsAdapter.notifyDeleteItem(pos)
+                }
+                viewModel.deleteItem.value = false
+                viewModel.mainActivityState.value = viewModel.mainActivityState.value?.copy(
+                    isBottomDialogShown = false, currentShownDialogItemPosition = null, currentShownDialogItem = null)
+
+            }
+        }
     }
 
     private fun observeSate() {
@@ -59,6 +77,7 @@ class HomeFragment : Fragment() {
 
     private fun observeCurrentCategory(){
         viewModel.currentCategory.onEach {
+            println(it)
             viewModel.homeState.value = viewModel.homeState.value?.copy(currentCategory = it)
            when(it){
                CurrentCategory.All.category -> {
@@ -70,36 +89,34 @@ class HomeFragment : Fragment() {
                        initRecyclerView(viewModel.allItems.value!!)
                    }
 
-
                }
                CurrentCategory.Logins.category-> {
 
-                   if (viewModel.loginItemsRv.value == null || viewModel.loginItemsRv.value?.isEmpty()!!){
+                   if (viewModel.loginItems.value == null || viewModel.loginItems.value?.isEmpty()!!){
                        viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = true)
                    }else{
                        viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = false)
-                       initRecyclerView(viewModel.loginItemsRv.value!!)
-
+                       initRecyclerView(viewModel.loginItems.value!!)
                    }
 
 
                }
                CurrentCategory.Notes.category-> {
 
-                   if (viewModel.noteItemsRv.value == null || viewModel.noteItemsRv.value?.isEmpty()!!){
+                   if (viewModel.noteItems.value == null || viewModel.noteItems.value?.isEmpty()!!){
                        viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = true)
                    }else{
-                       initRecyclerView(viewModel.noteItemsRv.value!!)
+                       initRecyclerView(viewModel.noteItems.value!!)
                        viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = false)
 
                    }
 
                }
                CurrentCategory.Identities.category ->{
-                   if (viewModel.idsItemsRv.value == null || viewModel.idsItemsRv.value?.isEmpty()!!){
+                   if (viewModel.idsItems.value == null || viewModel.idsItems.value?.isEmpty()!!){
                        viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = true)
                    }else{
-                       initRecyclerView(viewModel.idsItemsRv.value!!)
+                       initRecyclerView(viewModel.idsItems.value!!)
                        viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = false)
 
                    }
@@ -107,10 +124,11 @@ class HomeFragment : Fragment() {
 
                }
                CurrentCategory.Payments.category->{
-                   if (viewModel.paymentsItemsRv.value == null || viewModel.paymentsItemsRv.value?.isEmpty()!!){
+                   println(viewModel.paymentsItems.value)
+                   if (viewModel.paymentsItems.value == null || viewModel.paymentsItems.value?.isEmpty()!!){
                        viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = true)
                    }else{
-                       initRecyclerView(viewModel.paymentsItemsRv.value!!)
+                       initRecyclerView(viewModel.paymentsItems.value!!)
                        viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = false)
 
                    }
@@ -121,24 +139,14 @@ class HomeFragment : Fragment() {
         }.launchIn(lifecycleScope)
     }
 
-    private fun observeItems(){
-
-
-    }
-
-
-    private fun observeAllItems2(){
-
-
-    }
-    
 
    private fun initRecyclerView(list: MutableList<ItemListModel>){
 
        try {
+           println("initasdasda")
            val byName = Comparator.comparing { obj: ItemListModel -> obj.name.lowercase() }
            list.sortWith(byName)
-           itemsAdapter = PassItemAdapter(requireContext(), list, requireActivity(), isSearchPage = false, viewModelStoreOwner = requireActivity() )
+           itemsAdapter = PassItemAdapter(requireContext(), viewModel::onUserAction, list,::onItemClick, isSearchPage = false )
            binding.itemsRecyclerView.adapter = itemsAdapter
            binding.itemsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -154,6 +162,33 @@ class HomeFragment : Fragment() {
 
     }
 
+
+    private fun onItemClick(item: ItemListModel, position:Int){
+        val intent = Intent(requireContext(), AddNewItemActivity::class.java)
+        when(item.type) {
+
+            "LOGIN" -> {
+                intent.putExtra("pageType", "LOGIN")
+                intent.putExtra ("isEditPage", false)
+                intent.putExtra("item", item.loginItem)
+                intent.putExtra("itemList", item)
+            }
+
+            "NOTE"->{
+                intent.putExtra("pageType", "NOTE")
+                intent.putExtra("item", item.noteItem)
+                intent.putExtra("itemList", item)
+
+            }
+        }
+
+
+        viewModel.mainActivityState.value = viewModel.mainActivityState.value?.copy(currentShownDialogItemPosition = position)
+        intent.putExtra ("isEditPage", false)
+        intent.putExtra("pageAction","update")
+
+        requireActivity().startActivityForResult(intent,ITEM_PAGE_REQUEST_CODE)
+    }
 
 
 

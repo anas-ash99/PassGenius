@@ -9,6 +9,7 @@ object Constants {
     const val BASE_URL_heroku = "https://pass-genius-api.herokuapp.com/"
     const val BASE_URL_localhost = "http://10.0.2.2:5000/"
     val TIME_LIST_APP_LOCK = arrayListOf(1,2,3,4,5,10,15,30,60,0)
+    const val ITEM_PAGE_REQUEST_CODE = 0
     val categoriesList = listOf(
         CategoryItem("All", R.drawable.ic_outline_window_24, true),
         CategoryItem("Logins", R.drawable.ic_baseline_login_24, ),

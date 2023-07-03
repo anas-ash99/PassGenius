@@ -5,14 +5,12 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewGroup.MarginLayoutParams
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.passgenius.R
 import com.example.passgenius.common.UserActions
-import com.example.passgenius.domain.interfaces.OnCategoryRVClicks
 import com.example.passgenius.domain.models.CategoryItem
 
 
@@ -23,7 +21,6 @@ class AdapterCategories (
     private val list:List<CategoryItem>
     ): RecyclerView.Adapter<AdapterCategories.MyViewHolder>() {
 
-    private var selectedPosition:Int = 0
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         return MyViewHolder(
@@ -53,11 +50,7 @@ class AdapterCategories (
 //        }
         holder.title.text = item.name
         holder.itemView.setOnClickListener {
-//            item.isSelected = true
-//            onCategoryClick(position)
-//            notifyItemChanged(position)
             actions(UserActions.ChoseItemsCategory(position, this))
-
         }
 
     }

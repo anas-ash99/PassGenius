@@ -50,7 +50,6 @@ class MyRepoImpl @Inject constructor(
     override suspend fun getLoginItemsRV(): MutableList<ItemListModel> {
         val items:MutableList<ItemListModel> = mutableListOf()
         loginItemDao.getItemsOrderedByName().onEach {
-
             items.add(ItemListModel(name = it.itemName, secondaryName = it.email, loginItem = it, type = "LOGIN"))
         }
         return items
@@ -121,7 +120,6 @@ class MyRepoImpl @Inject constructor(
             val items:MutableList<ItemListModel> = mutableListOf()
             val res = itemsApi.getLoginItemsRemote().awaitResponse()
              if (res.isSuccessful){
-
                 loginItemDao.deleteAllItems()
                 noteItemDao.deleteAllItems()
                 res.body()!!.onEach {

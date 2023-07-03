@@ -13,12 +13,16 @@ interface ItemDao {
 
     @Upsert
     suspend fun addItem(item: ItemModel)
+
     @Delete
     suspend fun deleteItem(item: ItemModel)
+
     @Query("DELETE FROM itemModel")
     suspend fun deleteAllItems()
+
     @Query("SELECT * FROM itemModel ORDER BY name DESC")
     fun getItemsOrderedByName():  LiveData<MutableList<ItemModel>>
+
     @Query("SELECT * FROM itemModel")
     suspend fun getAllItemsByDate():  MutableList<ItemModel>
 

@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.View
 
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
@@ -32,16 +33,18 @@ import com.example.passgenius.domain.models.*
 import com.example.passgenius.domain.use_cases.TestUseCase
 import com.example.passgenius.domain.viewModels.AddItemViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import javax.inject.Inject
 
-
+@OptIn(ExperimentalCoroutinesApi::class)
 @AndroidEntryPoint
-class AddNewItemActivity(): AppCompatActivity(), DeleteClickInterface {
+class AddNewItemActivity: AppCompatActivity(), DeleteClickInterface {
 
     private lateinit var binding: ActivityAddNewLoginBinding
-    private lateinit var viewModel: AddItemViewModel
+
+    private val viewModel: AddItemViewModel by viewModels()
     private var items:MutableList<EditTextItemModel> = mutableListOf()
     private lateinit var adapter: ItemEditTextAdapter
     private var isEditPage:MutableLiveData<Boolean> = MutableLiveData()
@@ -63,10 +66,10 @@ class AddNewItemActivity(): AppCompatActivity(), DeleteClickInterface {
         super.onCreate(savedInstanceState)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_add_new_login)
-        viewModel = ViewModelProvider(this)[AddItemViewModel::class.java]
         isEditPage.value = intent.getBooleanExtra("isEditPage", true)
         pageType = intent.getStringExtra("pageType")!!
         deleteDialogClass = CenterDialog(this, deleteInterface = this )
+        viewModel.pageAction  = intent.getStringExtra("pageAction")
         initPage()
         observeSaveNoteItem()
         observeSaveItem()
@@ -75,12 +78,6 @@ class AddNewItemActivity(): AppCompatActivity(), DeleteClickInterface {
         observeIsEditPage()
         onArrowClick()
         onDeleteIconClick()
-//        lifecycleScope.launch {
-//
-//            repo.updateLoggedInUser(getSharedPreferences("PROFILE", MODE_PRIVATE), UserModel(lastSeen = "ACTIVE"))
-//        }
-
-
 
     }
 
@@ -275,6 +272,15 @@ class AddNewItemActivity(): AppCompatActivity(), DeleteClickInterface {
     }
 
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun onBackPressed() {
+        val intent = Intent()
+        intent.putExtra("action",viewModel.pageAction)
+        intent.putExtra("item",viewModel.item)
+        setResult(RESULT_OK, intent)
+        super.onBackPressed()
+
+    }
 
 
     private fun initPage() {

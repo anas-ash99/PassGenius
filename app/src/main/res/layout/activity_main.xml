@@ -444,20 +444,21 @@
 
 
         </LinearLayout>
+
         <androidx.cardview.widget.CardView
             android:id="@+id/addButton"
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_gravity="center"
-           android:onClick="@{()->viewModel.onAddClick()}"
+            android:layout_marginBottom="15dp"
             android:background="@drawable/half_circle"
             android:clickable="true"
             android:foreground="?attr/selectableItemBackground"
+            android:onClick="@{()->viewModel.onAddClick()}"
             app:cardBackgroundColor="#3F94B5"
             app:cardCornerRadius="32dp"
             app:cardElevation="0dp"
-            android:layout_marginEnd="15dp"
-            android:layout_marginBottom="15dp"
+            android:layout_marginRight="15dp"
             app:layout_constraintBottom_toTopOf="@+id/bottomNavigationView"
             app:layout_constraintEnd_toEndOf="parent">
 
@@ -472,5 +473,7 @@
 
 
         </androidx.cardview.widget.CardView>
+
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

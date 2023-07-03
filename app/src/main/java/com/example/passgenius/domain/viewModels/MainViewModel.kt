@@ -2,6 +2,7 @@ package com.example.passgenius.domain.viewModels
 
 
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.*
 import com.example.passgenius.common.states.HomePageState
 
@@ -17,6 +18,7 @@ import com.example.passgenius.domain.models.*
 import com.example.passgenius.ui.adapters.AdapterCategories
 
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -32,31 +34,25 @@ class MainViewModel @Inject constructor(
 
     val homeState = MutableLiveData(HomePageState())
     val categoriesList = Constants.categoriesList
+    val deleteItem by lazy {MutableLiveData(false)}
     val mainActivityState = MutableLiveData(MainActivityState())
     val currentCategory = MutableStateFlow<String?>(null)
-    val loginItems: MutableLiveData<MutableList<LoginItemModel>> = MutableLiveData()
-        init {
-            loginItems.value = mutableListOf()
-        }
-
     var loggedInUser:UserModel? = null
-    var lifecycleOwner:LifecycleOwner? = null
-
 
     val favouriteItems: MutableLiveData<MutableList<ItemListModel>> by lazy {
         MutableLiveData<MutableList<ItemListModel>>()
     }
 
-    val noteItemsRv: MutableLiveData<MutableList<ItemListModel>> by lazy {
+    val noteItems by lazy {
         MutableLiveData<MutableList<ItemListModel>>()
     }
-    val loginItemsRv: MutableLiveData<MutableList<ItemListModel>> by lazy {
+    val loginItems by lazy {
         MutableLiveData<MutableList<ItemListModel>>()
     }
-    val idsItemsRv: MutableLiveData<MutableList<ItemListModel>> by lazy {
+    val idsItems by lazy {
         MutableLiveData<MutableList<ItemListModel>>()
     }
-    val paymentsItemsRv: MutableLiveData<MutableList<ItemListModel>> by lazy {
+    val paymentsItems by lazy {
         MutableLiveData<MutableList<ItemListModel>>()
     }
 
@@ -67,7 +63,7 @@ class MainViewModel @Inject constructor(
     fun initViewModel(){
         getLoggedInUser()
         if (!mainActivityState.value?.isActivityCreated!!){
-            initItemsValues()
+            getItemsFromRemoteDB()
             authOnCreate()
 
         }
@@ -81,7 +77,48 @@ class MainViewModel @Inject constructor(
             is UserActions.ChoseItemsCategory -> {changeSelectedCategory(action.adapter,action.position)}
             is UserActions.NavigateScreens -> {}
             UserActions.PlusOrXClick -> {}
+            is UserActions.CopyDetail -> {}
+            UserActions.DeleteItem -> {
+                deleteItem()
+            }
+            is UserActions.ItemMenuClick -> {
+                mainActivityState.value = mainActivityState.value?.copy(
+                    isBottomDialogShown = true,
+                    currentShownDialogItemPosition = action.position,
+                    currentShownDialogItem = action.item
+                )
+            }
+            UserActions.DismissDialog -> mainActivityState.value = mainActivityState.value?.copy(isBottomDialogShown = false, currentShownDialogItemPosition = null)
         }
+    }
+
+
+    @SuppressLint("SuspiciousIndentation")
+    private fun deleteItem() {
+
+     val item = mainActivityState.value?.currentShownDialogItem
+
+        when(item?.type){
+            "LOGIN"->{
+                println("size1: " + loginItems.value?.size)
+//                loginItemsRv.value = loginItemsRv.value?.filter { it.loginItem._id != item.loginItem._id } as MutableList<ItemListModel>?
+                loginItems.value?.remove(item)
+                println("size2: " + loginItems.value?.size)
+                viewModelScope.launch(Dispatchers.IO) {
+                    repository.deleteLoginItem(item.loginItem)
+                }
+            }
+            "NOTE"->{
+                println("size1: " + noteItems.value?.size)
+                noteItems.value?.remove(item)
+                viewModelScope.launch {
+                    repository.deleteNoteItem(item.noteItem)
+                }
+            }
+        }
+        allItems.value?.remove(item)
+        deleteItem.value = true
+
     }
 
 
@@ -96,17 +133,22 @@ class MainViewModel @Inject constructor(
         }
         currentCategory.value = categoriesList[position].name
     }
+
     fun onPaymentsCategoryClick(){
         mainActivityState.value = mainActivityState.value?.copy(isPaymentLayoutShown = true)
     }
+
     fun onAddClick(){
         mainActivityState.value = mainActivityState.value?.copy(plusButton = mainActivityState.value?.plusButton == false, isPaymentLayoutShown = false)
     }
+
     fun getLoggedInUser(){
         viewModelScope.launch {
             loggedInUser = repository.getLoggedInUser()
         }
     }
+
+
     fun updateLoggedInUser(){
         viewModelScope.launch {
             repository.updateLoggedInUser(loggedInUser!!)
@@ -114,7 +156,7 @@ class MainViewModel @Inject constructor(
 
     }
 
-    private fun initItemsValues(){
+    private fun getItemsFromRemoteDB(){
         viewModelScope.launch {
             repository.getAllItems().onEach {
                 when(it){
@@ -125,42 +167,30 @@ class MainViewModel @Inject constructor(
                         currentCategory.value = CurrentCategory.All.category
                         homeState.value = homeState.value?.copy(isLoading = false)
                         mainActivityState.value?.isActivityCreated = true
+                        DataHolder.allItems = allItems.value!!
+                        setOtherItems()
                     }
                 }
             }.launchIn(viewModelScope)
         }
-        viewModelScope.launch {
-            repository.getLoginItemsRemote().onEach {
-                loginItems.value = it
-            }.launchIn(viewModelScope)
-        }
-        viewModelScope.launch {
-            loginItemsRv.value = repository.getLoginItemsRV()
-        }
-
-        viewModelScope.launch {
-            noteItemsRv.value = repository.getNoteItemsRV()
-        }
 
     }
 
-
-
-
-
+    fun setOtherItems() {
+        loginItems.value = allItems.value?.filter { it.type == "LOGIN"} as MutableList<ItemListModel>?
+        noteItems.value = allItems.value?.filter { it.type =="NOTE" } as MutableList<ItemListModel>?
+    }
 
     private fun authOnCreate(){
         if (loggedInUser?.lastSeen != "ACTIVE"){
             isExitingTheApp = false
             mainActivityState.value?.isAuthenticated = true
             mainActivityState.value?.currentScreen?.value = MainScreenTypes.HOME
-
         }else{
             mainActivityState.value?.isAuthenticated = false
         }
 
     }
-
     private fun getItemsFromLocalDB() {
         viewModelScope.launch {
             repository.getItemsFromLocalDB().onEach {

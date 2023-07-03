@@ -1,5 +1,6 @@
 package com.example.passgenius.ui.adapters
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -23,7 +24,8 @@ class AppLockTimeAdapter(
         )
     }
 
-    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
+    @SuppressLint("SetTextI18n")
+    override fun onBindViewHolder(holder: MyViewHolder, @SuppressLint("RecyclerView") position: Int) {
        val item = items[position]
         if (position == 0){
             holder.checkBox.text = "$item minute"

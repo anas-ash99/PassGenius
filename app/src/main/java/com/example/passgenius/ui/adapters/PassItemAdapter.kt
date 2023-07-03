@@ -1,5 +1,7 @@
 package com.example.passgenius.ui.adapters
 
+import android.annotation.SuppressLint
+import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
@@ -16,6 +18,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.example.passgenius.common.DeleteClickInterface
 import com.example.passgenius.R
+import com.example.passgenius.common.UserActions
 import com.example.passgenius.ui.ItemPage.AddNewItemActivity
 import com.example.passgenius.ui.dialogs.ShowBottomDialog
 import com.example.passgenius.common.enums.AddItemType
@@ -28,47 +31,37 @@ class PassItemAdapter
         (
 
     private val context: Context,
+    private val userActions:(UserActions)->Unit,
     private val items: MutableList<ItemListModel>,
-    lifecycleOwner: LifecycleOwner,
-    viewModelStoreOwner: ViewModelStoreOwner,
+    private val onItemClick:(item:ItemListModel, position:Int)-> Unit,
     private val isSearchPage:Boolean = false
         ) : RecyclerView.Adapter<PassItemAdapter.MyViewHolder>(), DeleteClickInterface {
-    private lateinit var  itemName:TextView
-    private lateinit var  itemImage:CircleImageView
-    private lateinit var  logoText:TextView
-    private lateinit var deleteCard:LinearLayout
-    private lateinit var layout1:LinearLayout
-    private lateinit var layout2:LinearLayout
-    private lateinit var layout3:LinearLayout
-    private lateinit var logoTextCard: CardView
-    private var viewModel: MainViewModel = ViewModelProvider(viewModelStoreOwner)[MainViewModel::class.java]
-
-    private val dialogClass: ShowBottomDialog = ShowBottomDialog(context, AddItemType.LOGIN, lifecycleOwner =  lifecycleOwner, deleteInterface = this)
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-
         return MyViewHolder(
             LayoutInflater.from(context).inflate(R.layout.item__pass_rv, parent,false)
         )
     }
 
+
+
+    fun notifyDeleteItem(position: Int){
+        println("pos: " + position)
+        notifyItemRemoved(position)
+    }
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        val item : ItemListModel = items.get(position)
+        val item : ItemListModel = items[position]
          if (position ==  items.size -1){
              val param = holder.itemView.layoutParams as ViewGroup.MarginLayoutParams
              param.bottomMargin = 200
          }
 
-//        if (item.imageUrl == ""){
-            holder.logoText.text = (item.name.substring(0,2).toUpperCase())
+
+            holder.logoText.text = (item.name.substring(0,2).uppercase())
             holder.itemImage.visibility =View.GONE
             holder.logoText.visibility = View.VISIBLE
-//        }else{
-//            Glide.with(context).load(item.imageUrl).into(holder.itemImage)
-//            holder.itemImage.visibility =View.VISIBLE
-//            holder.logoText.visibility = View.GONE
-//        }
 
         if (position > 0 && !isSearchPage ){
             val prevItem = items[position-1]
@@ -92,44 +85,33 @@ class PassItemAdapter
 
         holder.sortLetter.text = item.name.substring(0,1).uppercase()
 
-        val intent = Intent(context, AddNewItemActivity::class.java)
 
 
+
+
+        holder.itemCard.setOnClickListener {
+            onItemClick(item, position)
+
+        }
         when(item.type){
             "LOGIN"-> {
-                holder.itemCard.setOnClickListener {
 
-                    intent.putExtra("pageType", "LOGIN")
-                    intent.putExtra("isEditPage", false)
-                    intent.putExtra("item", item.loginItem)
-                    intent.putExtra("itemList", item)
-                    viewModel.isExitingTheApp = false
-                    context.startActivity(intent)
 
-                }
-//                holder.menuIcon.setOnClickListener { showDialogLoginItem(item.loginItem, position)}
                 holder.menuIcon.setOnClickListener {
-                    dialogClass.loginItem = item.loginItem
-                    dialogClass.itemType = AddItemType.LOGIN
-                    dialogClass.showDialog(position, this)
-
+                    userActions(UserActions.ItemMenuClick(position, item ))
                 }
             }
             "NOTE" -> {
-                holder.itemCard.setOnClickListener {
-                    intent.putExtra("pageType", "NOTE")
-                    intent.putExtra("isEditPage", false)
-                    intent.putExtra("item", item.noteItem)
-                    intent.putExtra("itemList", item)
-                    viewModel.isExitingTheApp = false
-                    context.startActivity(intent)
-                }
+//                holder.itemCard.setOnClickListener {
+//                    intent.putExtra("pageType", "NOTE")
+//                    intent.putExtra("isEditPage", false)
+//                    intent.putExtra("item", item.noteItem)
+//                    intent.putExtra("itemList", item)
+//                    context.startActivity(intent)
+//                }
 
                 holder.menuIcon.setOnClickListener {
-                    dialogClass.noteItem = item.noteItem
-                    dialogClass.itemType = AddItemType.SECURE_NOTE
-                    dialogClass.showDialog(position, this)
-
+                    userActions(UserActions.ItemMenuClick(position,item ))
                 }
 
             }
@@ -146,7 +128,7 @@ class PassItemAdapter
 
 
     override fun getItemCount(): Int {
-        return items.size!!
+        return items.size
     }
 
     class MyViewHolder(itemView:View): RecyclerView.ViewHolder(itemView){
@@ -166,5 +148,6 @@ class PassItemAdapter
             items.removeAt(position)
         }
     }
+
 
 }
