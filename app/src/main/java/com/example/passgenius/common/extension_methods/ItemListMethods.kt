@@ -1,6 +1,5 @@
 package com.example.passgenius.common.extension_methods
 
-import com.example.passgenius.common.enums.AddItemType
 import com.example.passgenius.domain.models.ItemListModel
 import com.example.passgenius.domain.models.LoginItemModel
 import com.example.passgenius.domain.models.SecureNoteModel

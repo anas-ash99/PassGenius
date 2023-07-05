@@ -1,20 +1,17 @@
 package com.example.passgenius.domain.models
 
-import androidx.room.ColumnInfo
+
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.time.LocalDateTime
-import java.util.Date
 import java.util.UUID
 
 
-@Entity
+
+@Entity()
 data class LoginItemModel(
 
     @PrimaryKey(false)
-    @ColumnInfo("_id", defaultValue = "")
-    var _id:String =  "",
-    val id:Int = 0,
+    var _id:String = UUID.randomUUID().toString(),
     var itemName:String = "",
     var email:String ="",
     var username:String = "",

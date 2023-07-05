@@ -12,6 +12,9 @@
 
         <import type="com.example.passgenius.common.AddItemPageType"/>
         <variable
+            name="isFavourite"
+            type="Boolean" />
+        <variable
             name="viewModel"
             type="com.example.passgenius.domain.viewModels.ItemPageViewModel" />
         <variable
@@ -178,7 +181,7 @@
                         android:clickable="true"
                         android:foreground="?attr/selectableItemBackground"
                         app:cardBackgroundColor="#FAFAFA"
-
+                        android:onClick="@{()->viewModel.addItemToFavorite()}"
                         app:cardCornerRadius="25dp"
                         app:cardElevation="0dp">
 
@@ -188,7 +191,7 @@
                             android:layout_width="28dp"
                             android:layout_height="28dp"
                             android:layout_gravity="center"
-                            android:background="@drawable/ic_baseline_star_outline_24" />
+                             />
                     </androidx.cardview.widget.CardView>
 
 

@@ -2,18 +2,17 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "581d8a9c4df65c34befedace1d8b26aa",
+    "identityHash": "843f22acfd1e6ded2dc842357b0c987e",
     "entities": [
       {
         "tableName": "LoginItemModel",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` TEXT NOT NULL DEFAULT '', `id` INTEGER NOT NULL, `itemName` TEXT NOT NULL, `email` TEXT NOT NULL, `username` TEXT NOT NULL, `password` TEXT NOT NULL, `linkAddress` TEXT NOT NULL, `note` TEXT NOT NULL, `website` TEXT NOT NULL, `createdSAt` TEXT NOT NULL, PRIMARY KEY(`_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` TEXT NOT NULL, `id` INTEGER NOT NULL, `itemName` TEXT NOT NULL, `email` TEXT NOT NULL, `username` TEXT NOT NULL, `password` TEXT NOT NULL, `linkAddress` TEXT NOT NULL, `note` TEXT NOT NULL, `website` TEXT NOT NULL, `createdSAt` TEXT NOT NULL, PRIMARY KEY(`_id`))",
         "fields": [
           {
             "fieldPath": "_id",
             "columnName": "_id",
             "affinity": "TEXT",
-            "notNull": true,
-            "defaultValue": "''"
+            "notNull": true
           },
           {
             "fieldPath": "id",
@@ -81,14 +80,13 @@
       },
       {
         "tableName": "SecureNoteModel",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` TEXT NOT NULL DEFAULT '', `id` INTEGER NOT NULL, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `createdSAt` TEXT NOT NULL, PRIMARY KEY(`_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` TEXT NOT NULL, `id` INTEGER NOT NULL, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `createdSAt` TEXT NOT NULL, PRIMARY KEY(`_id`))",
         "fields": [
           {
             "fieldPath": "_id",
             "columnName": "_id",
             "affinity": "TEXT",
-            "notNull": true,
-            "defaultValue": "''"
+            "notNull": true
           },
           {
             "fieldPath": "id",
@@ -128,7 +126,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '581d8a9c4df65c34befedace1d8b26aa')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '843f22acfd1e6ded2dc842357b0c987e')"
     ]
   }
 }

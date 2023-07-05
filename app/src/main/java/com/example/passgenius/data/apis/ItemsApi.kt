@@ -11,9 +11,6 @@ import retrofit2.http.POST
 
 interface ItemsApi {
 
-
-    @GET("/note_items/get_all_items")
-    fun getListItemsRemote(): Call<MutableList<ItemModel>>
     @GET("/Login_items/get_all_items")
     fun getLoginItemsRemote(): Call<MutableList<LoginItemModel>>
     @GET("/note_items/get_note_items")

@@ -5,8 +5,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.passgenius.common.AddItemPageType
-import com.example.passgenius.common.DataHolder
-import com.example.passgenius.common.enums.AddItemType
+import com.example.passgenius.common.DataHolder.allItems
+import com.example.passgenius.common.DataHolder.favouriteItemsIds
+import com.example.passgenius.common.enums.ItemType
 import com.example.passgenius.data.dataStates.DataState
 import com.example.passgenius.data.repository.MyRepository
 import com.example.passgenius.domain.models.*
@@ -26,7 +27,7 @@ class ItemPageViewModel @Inject constructor(
     ): ViewModel() {
     var loginItem: LoginItemModel = LoginItemModel()
     var noteItem: SecureNoteModel = SecureNoteModel()
-    var itemType:AddItemType? = null
+    var itemType:ItemType? = null
     var items = mutableListOf<EditTextItemModel>()
     var isChangeHappened = false
     val pageType by lazy {
@@ -45,7 +46,7 @@ class ItemPageViewModel @Inject constructor(
     }
 
     val isFavourite by lazy {
-        MutableLiveData(false)
+        MutableLiveData<Boolean>()
     }
     val saveLoginItemResponse by lazy {
         MutableLiveData<DataState<LoginItemModel>>()
@@ -62,12 +63,12 @@ class ItemPageViewModel @Inject constructor(
         validationError.value = mutableListOf()
         isChangeHappened = true
         when(itemType){
-            AddItemType.LOGIN-> {
+            ItemType.LOGIN-> {
                 if (validateLoginInput()){
                     saveLoginItem()
                 }
             }
-            AddItemType.NOTE-> {
+            ItemType.NOTE-> {
                 if (validateNoteInput()){
                     saveNoteItem()
                 }
@@ -138,7 +139,7 @@ class ItemPageViewModel @Inject constructor(
     }
 
     fun takeInput(s:CharSequence,name:String  ){
-        if (itemType == AddItemType.LOGIN){
+        if (itemType == ItemType.LOGIN){
             when(name){
                 "Password"-> item?.loginItem?.password = s.toString().trim()
                 "Email"-> item?.loginItem?.email = s.toString().trim()
@@ -148,7 +149,7 @@ class ItemPageViewModel @Inject constructor(
                 "Name"-> item?.loginItem?.itemName = s.toString().trim()
             }
 
-        }else if (itemType == AddItemType.NOTE){
+        }else if (itemType == ItemType.NOTE){
             when(name){
                 "Title"-> item?.noteItem?.title = s.toString().trim()
                 "Content"->  item?.noteItem?.content = s.toString().trim()
@@ -158,7 +159,7 @@ class ItemPageViewModel @Inject constructor(
     }
     fun getItemsForList():MutableList<EditTextItemModel>{
         items.removeAll(items)
-        if (itemType == AddItemType.LOGIN){
+        if (itemType == ItemType.LOGIN){
             items.add(EditTextItemModel("Name", InputType.TYPE_CLASS_TEXT, item?.loginItem?.itemName!!) )
             items.add( EditTextItemModel("Email", InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS, item?.loginItem?.email!!) )
             items.add( EditTextItemModel("Username", InputType.TYPE_CLASS_TEXT, item?.loginItem?.username!!) )
@@ -186,7 +187,9 @@ class ItemPageViewModel @Inject constructor(
 
     private fun saveLoginItem(){
        viewModelScope.launch {
-           repository.saveLoginItemToRemoteDB(item?.loginItem!!).onEach {
+
+
+           repository.saveLoginItemToLocalDB(item?.loginItem!!).onEach {
                saveLoginItemResponse.value = it
            }.launchIn(viewModelScope)
        }
@@ -196,9 +199,12 @@ class ItemPageViewModel @Inject constructor(
 
     private fun saveNoteItem(){
         viewModelScope.launch {
-            repository.saveNoteItemToRemoteDB(item?.noteItem!!).onEach {
+            repository.saveNoteItemToLocalDB(item?.noteItem!!).onEach {
                 saveNoteItemResponse.value = it
             }.launchIn(viewModelScope)
+//            repository.saveNoteItemToRemoteDB(item?.noteItem!!).onEach {
+//                saveNoteItemResponse.value = it
+//            }.launchIn(viewModelScope)
         }
         item = ItemListModel(noteItem.title, noteItem.content, "NOTE", noteItem = noteItem)
 
@@ -213,35 +219,65 @@ class ItemPageViewModel @Inject constructor(
     fun onBackPressed(){
         onBackClick.value = true
     }
+    fun checkIfFavourite(){
 
-    fun deleteNoteItem(){
-        viewModelScope.launch {
-            repository.deleteNoteItem(noteItem)
-        }
-        DataHolder.allItems.remove(item)
-    }
-
-    fun deleteLoginItem(){
-        viewModelScope.launch {
-            repository.deleteLoginItem(loginItem)
-        }
-        DataHolder.allItems.remove(item)
-    }
-
-    fun deleteItem() {
-        viewModelScope.launch {
         when(itemType){
-            AddItemType.LOGIN -> {
-                repository.deleteNoteItem(item?.noteItem!!)
+            ItemType.LOGIN -> {
+                isFavourite.value = favouriteItemsIds.contains(item?.loginItem?._id)
+            }
+            ItemType.NOTE -> {
+                isFavourite.value = favouriteItemsIds.contains(item?.noteItem?._id)
+            }
+           else->{}
+        }
+    }
+    fun addItemToFavorite(){
+
+        if (!isFavourite.value!!){
+            when(itemType){
+                ItemType.LOGIN-> {
+                    favouriteItemsIds.add(item?.loginItem?._id!!)
+                }
+                ItemType.NOTE -> favouriteItemsIds.add(item?.noteItem?._id!!)
+                else-> {}
+            }
+        }else{
+            when(itemType){
+                ItemType.LOGIN-> {
+                    favouriteItemsIds.remove(item?.loginItem?._id!!)
+                }
+                ItemType.NOTE -> favouriteItemsIds.remove(item?.noteItem?._id!!)
+                else-> {}
+            }
+        }
+
+        repository.updateFavouriteItems(FavouriteItems(favouriteItemsIds))
+        checkIfFavourite()
+    }
+    fun deleteItem() {
+
+        isChangeHappened = true
+        when(itemType){
+            ItemType.LOGIN -> {
+                viewModelScope.launch {
+                    repository.deleteLoginItem(item?.loginItem!!)
+                }
+                allItems.remove(item)
             }
 
-            AddItemType.NOTE -> repository.deleteNoteItem(item?.noteItem!!)
+            ItemType.NOTE -> {
+                viewModelScope.launch {
+                    repository.deleteNoteItem(item?.noteItem!!)
+                }
+                allItems.remove(item)
+
+            }
             else->{}
         }
 
 
-        }
-         onBackPressed()
+        onBackPressed()
+
     }
 
 }

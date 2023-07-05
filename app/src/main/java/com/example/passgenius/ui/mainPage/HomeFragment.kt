@@ -1,6 +1,5 @@
 package com.example.passgenius.ui.mainPage
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -11,13 +10,9 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.passgenius.R
-import com.example.passgenius.common.AddItemPageType
-import com.example.passgenius.common.Constants.ITEM_PAGE_REQUEST_CODE
 import com.example.passgenius.common.CurrentCategory
-import com.example.passgenius.common.enums.AddItemType
 
 import com.example.passgenius.ui.adapters.AdapterCategories
 import com.example.passgenius.ui.adapters.PassItemAdapter
@@ -27,10 +22,7 @@ import com.example.passgenius.databinding.FragmentHomeBinding
 import com.example.passgenius.domain.models.ItemListModel
 
 import com.example.passgenius.domain.viewModels.MainViewModel
-import com.example.passgenius.ui.ItemPage.ItemActivity
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 
 import kotlin.Comparator
 
@@ -154,7 +146,7 @@ class HomeFragment : Fragment() {
            binding.itemsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
        }catch (e:Exception){
-           Log.e("error", e.toString())
+           Log.e("error", e.message,e)
        }
 
    }

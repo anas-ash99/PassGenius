@@ -5,12 +5,8 @@ import android.content.Context
 import android.util.Log
 import android.view.Gravity
 import androidx.cardview.widget.CardView
-import com.example.passgenius.common.DeleteClickInterface
 import com.example.passgenius.R
-import com.example.passgenius.common.enums.AddItemType
 import com.example.passgenius.common.instances.DialogInstance
-import com.example.passgenius.domain.models.LoginItemModel
-import com.example.passgenius.domain.models.SecureNoteModel
 import com.example.passgenius.domain.viewModels.ItemPageViewModel
 
 class DeleteItemDialog (

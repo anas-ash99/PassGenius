@@ -16,7 +16,7 @@ interface LoginItemDao {
     suspend fun addItem(item: LoginItemModel)
 
     @Delete
-    fun deleteItem(item: LoginItemModel)
+    suspend fun deleteItem(item: LoginItemModel)
 
     @Query("DELETE FROM loginItemModel")
     suspend fun deleteAllItems()

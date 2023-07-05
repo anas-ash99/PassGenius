@@ -10,6 +10,7 @@ import com.example.passgenius.common.Constants
 import com.example.passgenius.common.CurrentCategory
 import com.example.passgenius.common.DataHolder
 import com.example.passgenius.common.UserActions
+import com.example.passgenius.common.enums.ItemType
 import com.example.passgenius.common.enums.MainScreenTypes
 import com.example.passgenius.common.states.MainActivityState
 import com.example.passgenius.data.dataStates.DataState
@@ -19,7 +20,6 @@ import com.example.passgenius.ui.adapters.AdapterCategories
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -38,11 +38,12 @@ class MainViewModel @Inject constructor(
     val mainActivityState = MutableLiveData(MainActivityState())
     val currentCategory = MutableLiveData<String?>(null)
     var loggedInUser:UserModel? = null
+    var isViewCreated = false
     val itemClick by lazy {
         MutableLiveData<ItemListModel>()
     }
-    val favouriteItems: MutableLiveData<MutableList<ItemListModel>> by lazy {
-        MutableLiveData<MutableList<ItemListModel>>()
+    val favouriteItems by lazy {
+        MutableLiveData<MutableList<ItemListModel>>(mutableListOf())
     }
 
     val noteItems by lazy {
@@ -63,17 +64,37 @@ class MainViewModel @Inject constructor(
     var isExitingTheApp: Boolean = true
 
     fun initViewModel(){
-        getLoggedInUser()
-        if (!mainActivityState.value?.isActivityCreated!!){
-            getItemsFromRemoteDB()
-            authOnCreate()
 
+
+        if (!mainActivityState.value?.isActivityCreated!!){
+            getItemsFromLocalDB()
+            authOnCreate()
+            getLoggedInUser()
         }
         DataHolder.loggedInUser = loggedInUser
 
     }
 
 
+
+    fun getFavoriteItems(){
+        repository.getFavouriteItems()?.let { items->
+            DataHolder.favouriteItemsIds = items.list
+            favouriteItems.value?.removeAll(favouriteItems.value!!)
+            allItems.value?.onEach { item->
+                if (item.type == ItemType.LOGIN.name){
+                    if (items.list.contains(item.loginItem._id)){
+                        favouriteItems.value?.add(item)
+                    }
+                }else if (item.type == ItemType.NOTE.name){
+                    if (items.list.contains(item.noteItem._id)){
+                        favouriteItems.value?.add(item)
+                    }
+                }
+            }
+
+        }
+    }
     fun onUserAction(action: UserActions){
         when(action){
             is UserActions.ChoseItemsCategory -> {changeSelectedCategory(action.adapter,action.position)}
@@ -102,16 +123,13 @@ class MainViewModel @Inject constructor(
 
         when(item?.type){
             "LOGIN"->{
-                println("size1: " + loginItems.value?.size)
-//                loginItemsRv.value = loginItemsRv.value?.filter { it.loginItem._id != item.loginItem._id } as MutableList<ItemListModel>?
                 loginItems.value?.remove(item)
-                println("size2: " + loginItems.value?.size)
+
                 viewModelScope.launch(Dispatchers.IO) {
                     repository.deleteLoginItem(item.loginItem)
                 }
             }
             "NOTE"->{
-                println("size1: " + noteItems.value?.size)
                 noteItems.value?.remove(item)
                 viewModelScope.launch {
                     repository.deleteNoteItem(item.noteItem)
@@ -148,6 +166,8 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch {
             loggedInUser = repository.getLoggedInUser()
         }
+
+
     }
 
 
@@ -201,9 +221,12 @@ class MainViewModel @Inject constructor(
                     DataState.Loading -> {}
                     is DataState.Success -> {
                         allItems.value = it.data!!
+                        DataHolder.allItems = it.data
                         currentCategory.value = CurrentCategory.All.category
                         homeState.value = homeState.value?.copy(isLoading = false)
                         mainActivityState.value?.isActivityCreated = true
+                        setOtherItems()
+
                     }
                 }
             }.launchIn(viewModelScope)

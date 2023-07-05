@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.passgenius.R
 import com.example.passgenius.common.AddItemPageType
 import com.example.passgenius.common.DataHolder.allItems
+import com.example.passgenius.common.DataHolder.favouriteItemsIds
 import com.example.passgenius.common.KeyboardManger.hideSoftKeyboard
 import com.example.passgenius.common.extension_methods.ItemListMethods.updateOrAddLogInItem
 import com.example.passgenius.common.extension_methods.ItemListMethods.updateOrAddNoteItem
@@ -44,10 +45,21 @@ class ItemFragment : Fragment() {
         observePageType()
         observeSaveItem()
         observeValidationError()
+        observeIsFavourite()
+        println(favouriteItemsIds)
         return binding.root
 
     }
 
+    private fun observeIsFavourite() {
+        viewModel.isFavourite.observe(requireActivity()){
+            if (it){
+                binding.startImage.setBackgroundResource(R.drawable.star_fav_icon)
+            }else{
+                binding.startImage.setBackgroundResource(R.drawable.ic_baseline_star_outline_24)
+            }
+        }
+    }
 
 
     private fun observeValidationError() {

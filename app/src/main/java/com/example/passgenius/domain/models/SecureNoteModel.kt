@@ -7,13 +7,12 @@ import java.time.LocalDateTime
 import java.util.*
 
 
-@Entity
+@Entity()
 data class SecureNoteModel(
 
+
     @PrimaryKey(false)
-    @ColumnInfo("_id", defaultValue = "")
-    var _id:String = "",
-    val id:Int = 0,
+    var _id:String = UUID.randomUUID().toString(),
     var title:String ="",
     var content:String="",
     var createdSAt: String = "${LocalDateTime.now()}"

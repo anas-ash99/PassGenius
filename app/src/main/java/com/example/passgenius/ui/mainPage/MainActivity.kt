@@ -13,8 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.passgenius.common.AddItemPageType
 import com.example.passgenius.common.Constants.ITEM_PAGE_REQUEST_CODE
 import com.example.passgenius.common.DataHolder.allItems
-import com.example.passgenius.common.PasswordGenerator
-import com.example.passgenius.common.enums.AddItemType
+import com.example.passgenius.common.enums.ItemType
 import com.example.passgenius.common.enums.MainScreenTypes
 import com.example.passgenius.databinding.ActivityMainBinding
 import com.example.passgenius.domain.models.ItemListModel
@@ -74,6 +73,7 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
           if (requestCode == ITEM_PAGE_REQUEST_CODE ){
               viewModel.allItems.value = allItems
+              viewModel.setOtherItems()
               viewModel.currentCategory.value = viewModel.currentCategory.value
 
           }
@@ -197,13 +197,13 @@ class MainActivity : AppCompatActivity() {
         binding.addLoginCard.setOnClickListener {
             i.putExtra("item", LoginItemModel())
 
-            beginActivity(AddItemType.LOGIN)
+            beginActivity(ItemType.LOGIN)
         }
 
         binding.secureNoteLayout.setOnClickListener {
             i.putExtra("item", SecureNoteModel())
 
-           beginActivity(AddItemType.NOTE)
+           beginActivity(ItemType.NOTE)
         }
 
         binding.addPaymentsCard.setOnClickListener {
@@ -217,7 +217,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun beginActivity(itemType: AddItemType){
+    private fun beginActivity(itemType: ItemType){
         viewModel.isExitingTheApp = false
         i.putExtra("itemType", itemType)
         i.putExtra("pageType", AddItemPageType.EDIT_PAGE)
@@ -247,23 +247,23 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun onItemClick(item: ItemListModel){
-        val intent = Intent(this, ItemActivity::class.java)
+
 
         when(item.type) {
 
             "LOGIN" -> {
-                intent.putExtra("itemType", AddItemType.LOGIN)
+                i.putExtra("itemType", ItemType.LOGIN)
             }
 
             "NOTE"->{
-                intent.putExtra("itemType", AddItemType.NOTE)
+                i.putExtra("itemType", ItemType.NOTE)
             }
         }
         viewModel.mainActivityState.value = viewModel.mainActivityState.value?.copy(plusButton = false)
-        intent.putExtra("item", item)
-        intent.putExtra("pageType", AddItemPageType.VIEW_PAGE)
-        intent.putExtra("pageAction","update")
-        startActivityForResult(intent, ITEM_PAGE_REQUEST_CODE)
+        i.putExtra("item", item)
+        i.putExtra("pageType", AddItemPageType.VIEW_PAGE)
+        i.putExtra("pageAction","update")
+        startActivityForResult(i, ITEM_PAGE_REQUEST_CODE)
         viewModel.itemClick.value = null
     }
 

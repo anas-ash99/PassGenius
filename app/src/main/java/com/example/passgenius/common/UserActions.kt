@@ -1,6 +1,5 @@
 package com.example.passgenius.common
 
-import com.example.passgenius.common.enums.AddItemType
 import com.example.passgenius.domain.models.ItemListModel
 import com.example.passgenius.ui.adapters.AdapterCategories
 

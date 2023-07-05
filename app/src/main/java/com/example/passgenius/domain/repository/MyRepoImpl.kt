@@ -38,12 +38,27 @@ class MyRepoImpl @Inject constructor(
             noteItemDao.getItemsOrderedByTitle().onEach {
                 items.add(ItemListModel(name = it.title, secondaryName = it.content, noteItem = it, type = "NOTE"))
             }
-
             send(DataState.Success(items))
         }catch (e:Exception){
             send(DataState.Error(e))
         }
 
+
+    }
+
+    override fun getFavouriteItems(): FavouriteItems? {
+        val gson = Gson()
+        val json = mPrefs.getString("favouriteItems", "")
+        println(json)
+        return gson.fromJson(json, FavouriteItems::class.java)
+    }
+
+    override fun updateFavouriteItems(list: FavouriteItems) {
+        val prefsEditor: Editor = mPrefs.edit()
+        val gson = Gson()
+        val json = gson.toJson(list)
+        prefsEditor.putString("favouriteItems", json)
+        prefsEditor.apply()
 
     }
 
@@ -78,13 +93,36 @@ class MyRepoImpl @Inject constructor(
         }
     }
 
+    override suspend fun saveLoginItemToLocalDB(item: LoginItemModel): Flow<DataState<LoginItemModel>> = flow {
+        emit(DataState.Loading)
+        try {
+               loginItemDao.addItem(item)
+               emit(DataState.Success(item))
+
+        }catch (e:Exception){
+            emit(DataState.Error(e))
+            Log.e("repo", e.toString())
+        }
+    }
+
+    override suspend fun saveNoteItemToLocalDB(item: SecureNoteModel): Flow<DataState<SecureNoteModel>> = flow {
+        emit(DataState.Loading)
+        try {
+            noteItemDao.addItem(item)
+            emit(DataState.Success(item))
+
+        }catch (e:Exception){
+            emit(DataState.Error(e))
+            Log.e("repo", e.toString())
+        }
+    }
 
 
-    override suspend fun deleteNoteItem(item:SecureNoteModel) {
+    override suspend  fun deleteNoteItem(item:SecureNoteModel) {
         try {
             noteItemDao.deleteItem(item)
         }catch (e:Exception) {
-            Log.e("repo", e.toString())
+            Log.e("delete note item", e.message, e)
         }
 
     }
@@ -93,7 +131,7 @@ class MyRepoImpl @Inject constructor(
         try {
             loginItemDao.deleteItem(item)
         }catch (e:Exception) {
-            Log.e("delete item", e.toString())
+            Log.e("delete login", e.message, e)
         }
     }
 
@@ -153,13 +191,6 @@ class MyRepoImpl @Inject constructor(
         prefsEditor.putString("LoggedInUser", json)
         prefsEditor.apply()
     }
-
-
-
-
-
-
-
 
 }
 

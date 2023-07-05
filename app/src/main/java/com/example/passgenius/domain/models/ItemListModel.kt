@@ -1,8 +1,5 @@
 package com.example.passgenius.domain.models
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import com.example.passgenius.common.enums.AddItemType
 import java.time.LocalDateTime
 
 
