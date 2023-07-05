@@ -47,13 +47,6 @@ class MyRepoImpl @Inject constructor(
 
     }
 
-    override suspend fun getLoginItemsRV(): MutableList<ItemListModel> {
-        val items:MutableList<ItemListModel> = mutableListOf()
-        loginItemDao.getItemsOrderedByName().onEach {
-            items.add(ItemListModel(name = it.itemName, secondaryName = it.email, loginItem = it, type = "LOGIN"))
-        }
-        return items
-    }
 
     override suspend fun saveLoginItemToRemoteDB(item: LoginItemModel): Flow<DataState<LoginItemModel>>  = flow{
         emit(DataState.Loading)
@@ -85,13 +78,7 @@ class MyRepoImpl @Inject constructor(
         }
     }
 
-     override suspend fun getNoteItemsRV(): MutableList<ItemListModel> {
-        val items:MutableList<ItemListModel> = mutableListOf()
-        noteItemDao.getItemsOrderedByTitle().onEach {
-            items.add(ItemListModel(name = it.title, secondaryName = it.content, noteItem = it, type = "NOTE"))
-        }
-        return items
-    }
+
 
     override suspend fun deleteNoteItem(item:SecureNoteModel) {
         try {
@@ -104,9 +91,7 @@ class MyRepoImpl @Inject constructor(
 
     override suspend fun deleteLoginItem(item:LoginItemModel) {
         try {
-
             loginItemDao.deleteItem(item)
-
         }catch (e:Exception) {
             Log.e("delete item", e.toString())
         }
@@ -173,18 +158,6 @@ class MyRepoImpl @Inject constructor(
 
 
 
-    override suspend fun getNoteItemsRemote(): Flow<MutableList<SecureNoteModel>> = flow {
-
-    }
-
-    override suspend fun getLoginItemsRemote(): Flow<MutableList<LoginItemModel>> = flow {
-        try {
-
-        }catch (e:Exception){
-            Log.e("repo", e.toString())
-        }
-
-    }
 
 
 

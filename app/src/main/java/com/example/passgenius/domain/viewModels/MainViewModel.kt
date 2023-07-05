@@ -36,9 +36,11 @@ class MainViewModel @Inject constructor(
     val categoriesList = Constants.categoriesList
     val deleteItem by lazy {MutableLiveData(false)}
     val mainActivityState = MutableLiveData(MainActivityState())
-    val currentCategory = MutableStateFlow<String?>(null)
+    val currentCategory = MutableLiveData<String?>(null)
     var loggedInUser:UserModel? = null
-
+    val itemClick by lazy {
+        MutableLiveData<ItemListModel>()
+    }
     val favouriteItems: MutableLiveData<MutableList<ItemListModel>> by lazy {
         MutableLiveData<MutableList<ItemListModel>>()
     }
@@ -207,6 +209,10 @@ class MainViewModel @Inject constructor(
             }.launchIn(viewModelScope)
         }
 
+    }
+
+    fun onPassItemClick(item: ItemListModel) {
+        itemClick.value = item
     }
 
 

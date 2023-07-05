@@ -5,19 +5,16 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Toast
-import androidx.activity.viewModels
-
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.example.passgenius.common.Constants
+import com.example.passgenius.common.AddItemPageType
 import com.example.passgenius.common.Constants.ITEM_PAGE_REQUEST_CODE
-import com.example.passgenius.common.CurrentCategory
-import com.example.passgenius.common.DataHolder
-
+import com.example.passgenius.common.DataHolder.allItems
+import com.example.passgenius.common.PasswordGenerator
+import com.example.passgenius.common.enums.AddItemType
 import com.example.passgenius.common.enums.MainScreenTypes
 import com.example.passgenius.databinding.ActivityMainBinding
 import com.example.passgenius.domain.models.ItemListModel
@@ -25,7 +22,7 @@ import com.example.passgenius.domain.models.LoginItemModel
 import com.example.passgenius.domain.models.SecureNoteModel
 
 import com.example.passgenius.domain.viewModels.MainViewModel
-import com.example.passgenius.ui.ItemPage.AddNewItemActivity
+import com.example.passgenius.ui.ItemPage.ItemActivity
 import com.example.passgenius.ui.authenticationPage.AuthenticationActivity
 import com.example.passgenius.ui.dialogs.ShowBottomDialog
 import dagger.hilt.android.AndroidEntryPoint
@@ -38,15 +35,13 @@ import com.example.passgenius.R as wR
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-
-
-
-
     lateinit var binding:ActivityMainBinding
     private var isClicked = false
     private lateinit var i:Intent
     private lateinit var  viewModel: MainViewModel
     private lateinit var itemDialog: ShowBottomDialog
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
@@ -56,36 +51,30 @@ class MainActivity : AppCompatActivity() {
         viewModel.initViewModel()
         observeState()
         binding.viewModel = viewModel
-        i = Intent(this, AddNewItemActivity::class.java)
+        i = Intent(this, ItemActivity::class.java)
         onAddCategoriesClicks()
         onBottomNavClicks()
         checkAuthentication()
         itemDialog = ShowBottomDialog(this,viewModel::onUserAction)
+        observeItemClick()
 
 
     }
+
+    private fun observeItemClick() {
+        viewModel.itemClick.observe(this){
+            it?.let { item-> onItemClick(item) }
+        }
+    }
+
 
 
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
           if (requestCode == ITEM_PAGE_REQUEST_CODE ){
-              if (data?.getStringExtra("action") == "update"){
-
-                  val item = data.getSerializableExtra("item") as ItemListModel
-                  viewModel.allItems.value?.removeAt(viewModel.mainActivityState.value?.currentShownDialogItemPosition!!)
-                  viewModel.allItems.value!!.add(viewModel.mainActivityState.value?.currentShownDialogItemPosition!!, item)
-                  viewModel.allItems.value?.onEach {
-                      println("name: " + it.name)
-                  }
-
-                  viewModel.currentCategory.value = CurrentCategory.All.category
-                  viewModel.allItems.value = DataHolder.allItems
-                  viewModel.setOtherItems()
-
-
-
-              }
+              viewModel.allItems.value = allItems
+              viewModel.currentCategory.value = viewModel.currentCategory.value
 
           }
 
@@ -164,6 +153,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
 
         if (viewModel.mainActivityState.value?.currentScreen?.value != MainScreenTypes.HOME){
@@ -207,13 +197,13 @@ class MainActivity : AppCompatActivity() {
         binding.addLoginCard.setOnClickListener {
             i.putExtra("item", LoginItemModel())
 
-            beginActivity("LOGIN")
+            beginActivity(AddItemType.LOGIN)
         }
 
         binding.secureNoteLayout.setOnClickListener {
             i.putExtra("item", SecureNoteModel())
 
-           beginActivity("NOTE")
+           beginActivity(AddItemType.NOTE)
         }
 
         binding.addPaymentsCard.setOnClickListener {
@@ -227,12 +217,12 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun beginActivity(name:String){
+    private fun beginActivity(itemType: AddItemType){
         viewModel.isExitingTheApp = false
-        i.putExtra("pageType", name)
-        i.putExtra("isEditPage", true)
-        i.putExtra("pageAction","addNew")
-//        viewModel.mainActivityState.value = viewModel.mainActivityState.value?.currentShownDialogItemPosition
+        i.putExtra("itemType", itemType)
+        i.putExtra("pageType", AddItemPageType.EDIT_PAGE)
+        i.putExtra("item", ItemListModel("", ""))
+        viewModel.mainActivityState.value = viewModel.mainActivityState.value?.copy(plusButton = false)
         startActivityForResult(i,ITEM_PAGE_REQUEST_CODE )
         overridePendingTransition(wR.anim.slide_in_up, wR.anim.slide_up_immediatley)
         binding.buttonIcon.setBackgroundResource(wR.drawable.icon_plus)
@@ -255,33 +245,27 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun onItemClick(item: ItemListModel, position:Int){
-        val intent = Intent(this, AddNewItemActivity::class.java)
+
+    private fun onItemClick(item: ItemListModel){
+        val intent = Intent(this, ItemActivity::class.java)
+
         when(item.type) {
 
             "LOGIN" -> {
-                intent.putExtra("pageType", "LOGIN")
-                intent.putExtra ("isEditPage", false)
-                intent.putExtra("item", item.loginItem)
-                intent.putExtra("itemList", item)
+                intent.putExtra("itemType", AddItemType.LOGIN)
             }
 
             "NOTE"->{
-                intent.putExtra("pageType", "NOTE")
-                intent.putExtra("item", item.noteItem)
-                intent.putExtra("itemList", item)
-
+                intent.putExtra("itemType", AddItemType.NOTE)
             }
         }
-
-
-        viewModel.mainActivityState.value = viewModel.mainActivityState.value?.copy(currentShownDialogItemPosition = position)
-        intent.putExtra ("isEditPage", false)
+        viewModel.mainActivityState.value = viewModel.mainActivityState.value?.copy(plusButton = false)
+        intent.putExtra("item", item)
+        intent.putExtra("pageType", AddItemPageType.VIEW_PAGE)
         intent.putExtra("pageAction","update")
-
-        startActivityForResult(intent,ITEM_PAGE_REQUEST_CODE)
+        startActivityForResult(intent, ITEM_PAGE_REQUEST_CODE)
+        viewModel.itemClick.value = null
     }
-
 
 }
 

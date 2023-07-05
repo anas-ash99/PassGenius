@@ -8,11 +8,9 @@ import kotlinx.coroutines.flow.Flow
 interface MyRepository {
 
    suspend fun getAllItems():Flow<DataState<MutableList<ItemListModel>>>
-   suspend fun getNoteItemsRemote():Flow<MutableList<SecureNoteModel>>
-   suspend fun getLoginItemsRemote():Flow<MutableList<LoginItemModel>>
+
    suspend fun getItemsFromLocalDB(): Flow<DataState<MutableList<ItemListModel>>>
-   suspend fun getLoginItemsRV():MutableList<ItemListModel>
-   suspend fun getNoteItemsRV():MutableList<ItemListModel>
+
    suspend fun deleteNoteItem(item:SecureNoteModel)
    suspend fun deleteLoginItem(item:LoginItemModel)
    suspend fun saveLoginItemToRemoteDB(item: LoginItemModel):Flow<DataState<LoginItemModel>>

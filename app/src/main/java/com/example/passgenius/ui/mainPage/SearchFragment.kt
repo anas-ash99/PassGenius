@@ -16,7 +16,7 @@ import com.example.passgenius.ui.adapters.PassItemAdapter
 import com.example.passgenius.databinding.FragmentSearchItemsBinding
 import com.example.passgenius.domain.models.ItemListModel
 import com.example.passgenius.domain.viewModels.MainViewModel
-import com.example.passgenius.ui.ItemPage.AddNewItemActivity
+import com.example.passgenius.ui.ItemPage.ItemActivity
 
 
 class SearchFragment : Fragment() {
@@ -33,7 +33,7 @@ class SearchFragment : Fragment() {
     ): View {
         binding = DataBindingUtil.inflate(inflater,R.layout.fragment_search_items,container, false)
         viewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
-        adapter = PassItemAdapter(requireContext(), viewModel::onUserAction, items,::onItemClick, isSearchPage = true)
+        adapter = PassItemAdapter(requireContext(),  items, isSearchPage = true, viewModel)
         observeEditText()
         onArrowBackClick()
         return binding.root
@@ -46,16 +46,17 @@ class SearchFragment : Fragment() {
     }
 
       private fun initRecyclerView(){
-          adapter = PassItemAdapter(requireContext(),viewModel::onUserAction, items, ::onItemClick, isSearchPage = true)
+          adapter = PassItemAdapter(requireContext(), items,isSearchPage = true, viewModel)
           binding.recyclerView.adapter = adapter
           binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
       }
+
     private fun observeEditText() {
         binding.editText.addTextChangedListener {
             if (it?.toString()?.trim()?.length!! > 0){
                 binding.XButton.visibility = View.VISIBLE
 
-                handleSearch(it?.toString()?.trim()!!)
+                handleSearch(it.toString()?.trim()!!)
                 binding.recyclerView.visibility = View.VISIBLE
                 binding.startLayout.visibility = View.GONE
             }else{
@@ -84,31 +85,6 @@ class SearchFragment : Fragment() {
 
 
     }
-    private fun onItemClick(item: ItemListModel, position:Int){
-        val intent = Intent(requireContext(), AddNewItemActivity::class.java)
-        when(item.type) {
 
-            "LOGIN" -> {
-                intent.putExtra("pageType", "LOGIN")
-                intent.putExtra ("isEditPage", false)
-                intent.putExtra("item", item.loginItem)
-                intent.putExtra("itemList", item)
-            }
-
-            "NOTE"->{
-                intent.putExtra("pageType", "NOTE")
-                intent.putExtra("item", item.noteItem)
-                intent.putExtra("itemList", item)
-
-            }
-        }
-
-
-        viewModel.mainActivityState.value = viewModel.mainActivityState.value?.copy(currentShownDialogItemPosition = position)
-        intent.putExtra ("isEditPage", false)
-        intent.putExtra("pageAction","update")
-
-        requireActivity().startActivityForResult(intent, Constants.ITEM_PAGE_REQUEST_CODE)
-    }
 
 }

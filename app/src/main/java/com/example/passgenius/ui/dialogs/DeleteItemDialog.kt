@@ -11,23 +11,22 @@ import com.example.passgenius.common.enums.AddItemType
 import com.example.passgenius.common.instances.DialogInstance
 import com.example.passgenius.domain.models.LoginItemModel
 import com.example.passgenius.domain.models.SecureNoteModel
+import com.example.passgenius.domain.viewModels.ItemPageViewModel
 
-class CenterDialog (
+class DeleteItemDialog (
     private val context: Context,
-    var pageTye: AddItemType? = null,
-    var loginItemModel: LoginItemModel = LoginItemModel(),
-    var noteItem: SecureNoteModel = SecureNoteModel(),
-    deleteInterface: DeleteClickInterface
+    private val viewModel: ItemPageViewModel
+
 ) {
 
-    var dialog: Dialog = DialogInstance.initDialog(context, Gravity.CENTER,R.layout.dialog_delete_alert, R.style.DialogCenterAnimation)!!
+    private var dialog: Dialog = DialogInstance.initDialog(context, Gravity.CENTER,R.layout.dialog_delete_alert, R.style.DialogCenterAnimation)!!
     private var deleteButton:CardView
     private var cancelButton:CardView
-    var itemRVPosition:Int = -1
+
     init {
-        dialog?.window?.setGravity(Gravity.CENTER)
-        deleteButton = dialog?.findViewById(R.id.deleteButton)!!
-        cancelButton = dialog?.findViewById(R.id.cancel_button)!!
+        dialog.window?.setGravity(Gravity.CENTER)
+        deleteButton = dialog.findViewById(R.id.deleteButton)!!
+        cancelButton = dialog.findViewById(R.id.cancel_button)!!
 
 
         cancelButton.setOnClickListener {
@@ -36,7 +35,7 @@ class CenterDialog (
 
         deleteButton.setOnClickListener {
             try {
-                deleteInterface.onDeleteClick(itemRVPosition)
+                viewModel.deleteItem()
             }catch (e:java.lang.Exception){
                 Log.e("dialog", e.toString())
             }
@@ -44,8 +43,7 @@ class CenterDialog (
 
     }
 
-    fun showDialog(position: Int) {
-        itemRVPosition = position
+    fun showDialog() {
         dialog.show()
     }
 

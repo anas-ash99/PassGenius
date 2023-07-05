@@ -14,8 +14,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.passgenius.R
+import com.example.passgenius.common.AddItemPageType
 import com.example.passgenius.common.Constants.ITEM_PAGE_REQUEST_CODE
 import com.example.passgenius.common.CurrentCategory
+import com.example.passgenius.common.enums.AddItemType
 
 import com.example.passgenius.ui.adapters.AdapterCategories
 import com.example.passgenius.ui.adapters.PassItemAdapter
@@ -25,7 +27,7 @@ import com.example.passgenius.databinding.FragmentHomeBinding
 import com.example.passgenius.domain.models.ItemListModel
 
 import com.example.passgenius.domain.viewModels.MainViewModel
-import com.example.passgenius.ui.ItemPage.AddNewItemActivity
+import com.example.passgenius.ui.ItemPage.ItemActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -49,8 +51,12 @@ class HomeFragment : Fragment() {
         observeCurrentCategory()
         observeSate()
         observeDeleteItem()
+
+
         return binding.root
     }
+
+
 
     private fun observeDeleteItem() {
         viewModel.deleteItem.observe(requireActivity()){
@@ -76,8 +82,7 @@ class HomeFragment : Fragment() {
 
 
     private fun observeCurrentCategory(){
-        viewModel.currentCategory.onEach {
-            println(it)
+        viewModel.currentCategory.observe(requireActivity()) {
             viewModel.homeState.value = viewModel.homeState.value?.copy(currentCategory = it)
            when(it){
                CurrentCategory.All.category -> {
@@ -124,7 +129,6 @@ class HomeFragment : Fragment() {
 
                }
                CurrentCategory.Payments.category->{
-                   println(viewModel.paymentsItems.value)
                    if (viewModel.paymentsItems.value == null || viewModel.paymentsItems.value?.isEmpty()!!){
                        viewModel.homeState.value = viewModel.homeState.value?.copy(isListEmpty = true)
                    }else{
@@ -136,17 +140,16 @@ class HomeFragment : Fragment() {
                }
            }
 
-        }.launchIn(lifecycleScope)
+        }
     }
 
 
    private fun initRecyclerView(list: MutableList<ItemListModel>){
 
        try {
-           println("initasdasda")
            val byName = Comparator.comparing { obj: ItemListModel -> obj.name.lowercase() }
            list.sortWith(byName)
-           itemsAdapter = PassItemAdapter(requireContext(), viewModel::onUserAction, list,::onItemClick, isSearchPage = false )
+           itemsAdapter = PassItemAdapter(requireContext(),list, isSearchPage = false, viewModel )
            binding.itemsRecyclerView.adapter = itemsAdapter
            binding.itemsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -159,37 +162,6 @@ class HomeFragment : Fragment() {
         categoriesAdapter = AdapterCategories(requireContext(), viewModel::onUserAction,viewModel.categoriesList)
         binding.categoriesRecyclerView.adapter = categoriesAdapter
         binding.categoriesRecyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL,false )
-
     }
-
-
-    private fun onItemClick(item: ItemListModel, position:Int){
-        val intent = Intent(requireContext(), AddNewItemActivity::class.java)
-        when(item.type) {
-
-            "LOGIN" -> {
-                intent.putExtra("pageType", "LOGIN")
-                intent.putExtra ("isEditPage", false)
-                intent.putExtra("item", item.loginItem)
-                intent.putExtra("itemList", item)
-            }
-
-            "NOTE"->{
-                intent.putExtra("pageType", "NOTE")
-                intent.putExtra("item", item.noteItem)
-                intent.putExtra("itemList", item)
-
-            }
-        }
-
-
-        viewModel.mainActivityState.value = viewModel.mainActivityState.value?.copy(currentShownDialogItemPosition = position)
-        intent.putExtra ("isEditPage", false)
-        intent.putExtra("pageAction","update")
-
-        requireActivity().startActivityForResult(intent,ITEM_PAGE_REQUEST_CODE)
-    }
-
-
 
 }

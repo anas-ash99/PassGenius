@@ -42,7 +42,7 @@
                 android:value="" />
         </activity>
         <activity
-            android:name=".ui.ItemPage.AddNewItemActivity"
+            android:name=".ui.ItemPage.ItemActivity"
             android:exported="false"
             android:screenOrientation="portrait">
             <meta-data

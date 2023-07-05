@@ -1,40 +1,28 @@
 package com.example.passgenius.ui.adapters
 
 import android.annotation.SuppressLint
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
-import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.cardview.widget.CardView
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStoreOwner
 import androidx.recyclerview.widget.RecyclerView
 import com.example.passgenius.common.DeleteClickInterface
 import com.example.passgenius.R
 import com.example.passgenius.common.UserActions
-import com.example.passgenius.ui.ItemPage.AddNewItemActivity
-import com.example.passgenius.ui.dialogs.ShowBottomDialog
-import com.example.passgenius.common.enums.AddItemType
 import com.example.passgenius.domain.models.ItemListModel
 import com.example.passgenius.domain.viewModels.MainViewModel
-import de.hdodenhof.circleimageview.CircleImageView
 
 
 class PassItemAdapter
         (
-
     private val context: Context,
-    private val userActions:(UserActions)->Unit,
     private val items: MutableList<ItemListModel>,
-    private val onItemClick:(item:ItemListModel, position:Int)-> Unit,
-    private val isSearchPage:Boolean = false
+    private val isSearchPage:Boolean = false,
+    private val viewModel: MainViewModel
         ) : RecyclerView.Adapter<PassItemAdapter.MyViewHolder>(), DeleteClickInterface {
 
 
@@ -47,7 +35,6 @@ class PassItemAdapter
 
 
     fun notifyDeleteItem(position: Int){
-        println("pos: " + position)
         notifyItemRemoved(position)
     }
     @SuppressLint("SetTextI18n")
@@ -59,64 +46,40 @@ class PassItemAdapter
          }
 
 
+        try {
             holder.logoText.text = (item.name.substring(0,2).uppercase())
             holder.itemImage.visibility =View.GONE
             holder.logoText.visibility = View.VISIBLE
 
-        if (position > 0 && !isSearchPage ){
-            val prevItem = items[position-1]
-            if (item.name.substring(0,1).lowercase() == prevItem.name.substring(0,1).lowercase()){
-                holder.sortLetter.visibility= View.GONE
+            if (position > 0 && !isSearchPage ){
+                val prevItem = items[position-1]
+                if (item.name.substring(0,1).lowercase() == prevItem.name.substring(0,1).lowercase()){
+                    holder.sortLetter.visibility= View.GONE
 
+                }
             }
+            if (isSearchPage){
+                holder.sortLetter.visibility= View.GONE
+            }
+
+            holder.itemName.text = item.name
+
+            if (item.secondaryName.length >37){
+                holder.email.text = "${item.secondaryName.substring(0, 38)}..."
+            }else{
+                holder.email.text = item.secondaryName
+            }
+            holder.sortLetter.text = item.name.substring(0,1).uppercase()
+        }catch (e:StringIndexOutOfBoundsException){
+            Log.e("substring",e.message,e )
         }
-        if (isSearchPage){
-            holder.sortLetter.visibility= View.GONE
-        }
-
-        holder.itemName.text = item.name
-
-        if (item.secondaryName.length >37){
-            holder.email.text = "${item.secondaryName.substring(0, 38)}..."
-        }else{
-            holder.email.text = item.secondaryName
-
-        }
-
-        holder.sortLetter.text = item.name.substring(0,1).uppercase()
-
-
-
-
 
         holder.itemCard.setOnClickListener {
-            onItemClick(item, position)
-
+           viewModel.onPassItemClick(item)
         }
-        when(item.type){
-            "LOGIN"-> {
 
-
-                holder.menuIcon.setOnClickListener {
-                    userActions(UserActions.ItemMenuClick(position, item ))
-                }
-            }
-            "NOTE" -> {
-//                holder.itemCard.setOnClickListener {
-//                    intent.putExtra("pageType", "NOTE")
-//                    intent.putExtra("isEditPage", false)
-//                    intent.putExtra("item", item.noteItem)
-//                    intent.putExtra("itemList", item)
-//                    context.startActivity(intent)
-//                }
-
-                holder.menuIcon.setOnClickListener {
-                    userActions(UserActions.ItemMenuClick(position,item ))
-                }
-
-            }
-            else->{
-            }
+        holder.menuIcon.setOnClickListener {
+            viewModel.onUserAction(UserActions.ItemMenuClick(position, item))
         }
 
 
@@ -138,7 +101,6 @@ class PassItemAdapter
         val itemImage: ImageView = itemView.findViewById(R.id.itemImage)
         val logoText:TextView = itemView.findViewById(R.id.LogoText)
         var menuIcon: CardView = itemView.findViewById(R.id.saveIcon)
-
         val itemCard:CardView = itemView.findViewById(R.id.cardLayout)
     }
 

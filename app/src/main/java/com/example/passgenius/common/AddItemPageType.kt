@@ -1,6 +1,8 @@
 package com.example.passgenius.common
 
-enum class AddItemPageType {
+import java.io.Serializable
+
+enum class AddItemPageType: Serializable {
     EDIT_PAGE,
     VIEW_PAGE
 }

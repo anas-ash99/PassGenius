@@ -1,5 +1,10 @@
 package com.example.passgenius.common.extension_methods
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.widget.Toast
+
 object StringMethods {
 
 
@@ -26,6 +31,14 @@ object StringMethods {
         }
         return ""
 
+    }
+
+
+    fun String.copyText(context: Context){
+        val clipBoard: ClipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        val clip: ClipData = ClipData.newPlainText("value",this)
+        clipBoard.setPrimaryClip(clip)
+        Toast.makeText(context, "Copied to clipboard.", Toast.LENGTH_SHORT).show()
     }
 
 
